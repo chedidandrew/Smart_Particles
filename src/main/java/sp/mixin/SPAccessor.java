@@ -7,11 +7,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Particle.class)
 public interface SPAccessor {
 	@Accessor("x")
-	double particlecap$getX();
+	double smartparticles$getX();
 
 	@Accessor("y")
-	double particlecap$getY();
+	double smartparticles$getY();
 
 	@Accessor("z")
-	double particlecap$getZ();
+	double smartparticles$getZ();
 }

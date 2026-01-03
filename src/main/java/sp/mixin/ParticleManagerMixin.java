@@ -32,16 +32,16 @@ public abstract class ParticleManagerMixin {
     private Object2IntOpenHashMap<ParticleGroup> groupCounts;
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void particlecap$enforceParticleLimit(CallbackInfo ci) {
+    private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
         if (player == null) return;
 
         int limit = Math.max(0, SPConfig.instance.particleLimit);
-        boolean strictCulling = SPConfig.instance.strictCameraCulling;
+        boolean smartCulling = SPConfig.instance.smartCameraCulling;
 
-        // If not using strict culling, we can optimize by only running when the limit is exceeded.
-        if (!strictCulling) {
+        // If not using smart culling, we can optimize by only running when the limit is exceeded.
+        if (!smartCulling) {
             int total = 0;
             for (Queue<Particle> q : particles.values()) {
                 total += q.size();
@@ -71,9 +71,9 @@ public abstract class ParticleManagerMixin {
                 SPAccessor acc = (SPAccessor) p;
                 
                 // 1. Frustum Check: Is the particle visible?
-                double ex = acc.particlecap$getX() - camPos.x;
-                double ey = acc.particlecap$getY() - camPos.y;
-                double ez = acc.particlecap$getZ() - camPos.z;
+                double ex = acc.smartparticles$getX() - camPos.x;
+                double ey = acc.smartparticles$getY() - camPos.y;
+                double ez = acc.smartparticles$getZ() - camPos.z;
                 
                 double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
                 boolean inFrustum = false;
@@ -86,18 +86,18 @@ public abstract class ParticleManagerMixin {
                      }
                 }
 
-                // If strict culling is enabled, completely ignore/remove invisible particles
-                if (strictCulling && !inFrustum) continue;
+                // If smart culling is enabled, completely ignore/remove invisible particles
+                if (smartCulling && !inFrustum) continue;
 
                 // 2. Score Calculation
-                double dx = acc.particlecap$getX() - px;
-                double dy = acc.particlecap$getY() - py;
-                double dz = acc.particlecap$getZ() - pz;
+                double dx = acc.smartparticles$getX() - px;
+                double dy = acc.smartparticles$getY() - py;
+                double dz = acc.smartparticles$getZ() - pz;
                 double distSq = dx * dx + dy * dy + dz * dz;
 
                 double score = distSq;
-                // If standard culling (not strict), use penalty to prioritize keeping visible particles
-                if (!strictCulling && !inFrustum) {
+                // If standard culling (not smart), use penalty to prioritize keeping visible particles
+                if (!smartCulling && !inFrustum) {
                     score += frustumPenalty;
                 }
 

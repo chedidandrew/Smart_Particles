@@ -16,7 +16,7 @@ public class SPConfig {
 
     // The setting accessible to the user
     public int particleLimit = 5000;
-    public boolean strictCameraCulling = true;
+    public boolean smartCameraCulling = true;
 
     public static void load() {
         if (Files.exists(CONFIG_PATH)) {

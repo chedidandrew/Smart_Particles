@@ -13,7 +13,7 @@ public class SPModMenuIntegration implements ModMenuApi {
         return parent -> {
             ConfigBuilder builder = ConfigBuilder.create()
                     .setParentScreen(parent)
-                    .setTitle(Text.of("Particle Cap Config"));
+                    .setTitle(Text.of("Smart Particles Config"));
 
             ConfigCategory general = builder.getOrCreateCategory(Text.of("General"));
             ConfigEntryBuilder entryBuilder = builder.entryBuilder();
@@ -25,10 +25,10 @@ public class SPModMenuIntegration implements ModMenuApi {
                     .setSaveConsumer(newValue -> SPConfig.instance.particleLimit = newValue)
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(Text.of("Strict Camera Culling"), SPConfig.instance.strictCameraCulling)
+            general.addEntry(entryBuilder.startBooleanToggle(Text.of("Smart Camera Culling"), SPConfig.instance.smartCameraCulling)
                     .setDefaultValue(true)
                     .setTooltip(Text.of("Aggressively removes particles outside the camera view, even if below the limit."))
-                    .setSaveConsumer(newValue -> SPConfig.instance.strictCameraCulling = newValue)
+                    .setSaveConsumer(newValue -> SPConfig.instance.smartCameraCulling = newValue)
                     .build());
 
             builder.setSavingRunnable(SPConfig::save);
