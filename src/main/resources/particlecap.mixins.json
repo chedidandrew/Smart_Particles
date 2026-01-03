@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.chedidandrew.particlecap.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ParticleAccessor",
+    "ParticleManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

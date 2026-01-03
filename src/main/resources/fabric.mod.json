@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "particlecap",
+	"version": "${version}",
+	"name": "Particle Cap",
+	"description": "Caps the total particle count to 5000, keeping the nearest particles to the player.",
+	"authors": [
+		"DeathTankerLOLz"
+	],
+	"license": "MIT",
+	"icon": "assets/particlecap/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.chedidandrew.particlecap.ParticleCapMod"
+		],
+		"modmenu": [
+			"com.chedidandrew.particlecap.ParticleCapModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"particlecap.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.0",
+		"minecraft": "1.21.1",
+		"java": ">=21"
+	}
+}
