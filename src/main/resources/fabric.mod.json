@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "particlecap",
+	"id": "sp",
 	"version": "${version}",
 	"name": "Particle Cap",
 	"description": "Caps the total particle count to 5000, keeping the nearest particles to the player.",
@@ -8,18 +8,18 @@
 		"DeathTankerLOLz"
 	],
 	"license": "MIT",
-	"icon": "assets/particlecap/icon.png",
+	"icon": "assets/sp/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"com.chedidandrew.particlecap.ParticleCapMod"
+			"sp.SPMod"
 		],
 		"modmenu": [
-			"com.chedidandrew.particlecap.ParticleCapModMenuIntegration"
+			"sp.SPModMenuIntegration"
 		]
 	},
 	"mixins": [
-		"particlecap.mixins.json"
+		"sp.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.18.0",

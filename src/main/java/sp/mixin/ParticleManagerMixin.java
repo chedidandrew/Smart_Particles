@@ -1,6 +1,6 @@
-package com.chedidandrew.particlecap.mixin;
+package sp.mixin;
 
-import com.chedidandrew.particlecap.ParticleCapConfig;
+import sp.SPConfig;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -37,8 +37,8 @@ public abstract class ParticleManagerMixin {
         ClientPlayerEntity player = client.player;
         if (player == null) return;
 
-        int limit = Math.max(0, ParticleCapConfig.instance.particleLimit);
-        boolean strictCulling = ParticleCapConfig.instance.strictCameraCulling;
+        int limit = Math.max(0, SPConfig.instance.particleLimit);
+        boolean strictCulling = SPConfig.instance.strictCameraCulling;
 
         // If not using strict culling, we can optimize by only running when the limit is exceeded.
         if (!strictCulling) {
@@ -68,7 +68,7 @@ public abstract class ParticleManagerMixin {
 
         for (Queue<Particle> q : particles.values()) {
             for (Particle p : q) {
-                ParticleAccessor acc = (ParticleAccessor) p;
+                SPAccessor acc = (SPAccessor) p;
                 
                 // 1. Frustum Check: Is the particle visible?
                 double ex = acc.particlecap$getX() - camPos.x;

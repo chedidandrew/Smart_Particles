@@ -1,4 +1,4 @@
-package com.chedidandrew.particlecap;
+package sp;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class ParticleCapConfig {
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("particlecap/config.json");
+public class SPConfig {
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("sp/config.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    public static ParticleCapConfig instance = new ParticleCapConfig();
+    public static SPConfig instance = new SPConfig();
 
     // The setting accessible to the user
     public int particleLimit = 5000;
@@ -22,7 +22,7 @@ public class ParticleCapConfig {
         if (Files.exists(CONFIG_PATH)) {
             try {
                 String json = Files.readString(CONFIG_PATH);
-                instance = GSON.fromJson(json, ParticleCapConfig.class);
+                instance = GSON.fromJson(json, SPConfig.class);
             } catch (IOException e) {
                 e.printStackTrace();
             }
