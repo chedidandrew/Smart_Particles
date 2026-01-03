@@ -4,7 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "SPAccessor",
-    "SPManagerMixin"
+    "ParticleManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
