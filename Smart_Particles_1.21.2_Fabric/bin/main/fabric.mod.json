@@ -5,7 +5,7 @@
 	"name": "Smart Particles",
 	"description": "A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.",
 	"authors": [
-		"DeathTankerLOLz"
+		"Andrew-Chedid"
 	],
 	"license": "MIT",
 	"icon": "assets/icon.png",
@@ -27,8 +27,8 @@
 		"sp.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.18.0",
-		"minecraft": "1.21.1",
+		"fabricloader": ">=0.16.7",
+		"minecraft": "1.21.2",
 		"java": ">=21"
 	}
 }
