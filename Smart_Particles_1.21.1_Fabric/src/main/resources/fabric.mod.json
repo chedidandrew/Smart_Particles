@@ -10,6 +10,11 @@
 	"license": "MIT",
 	"icon": "assets/icon.png",
 	"environment": "client",
+	"contact": {
+		"homepage": "https://modrinth.com/mod/smart-particles",
+		"sources": "https://github.com/chedidandrew/smart_particles",
+		"issues": "https://github.com/chedidandrew/smart_particles/issues"
+	},
 	"entrypoints": {
 		"client": [
 			"sp.SPMod"

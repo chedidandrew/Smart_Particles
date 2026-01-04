@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class SPConfig {
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("sp/config.json");
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("smart_particles/config.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static SPConfig instance = new SPConfig();
