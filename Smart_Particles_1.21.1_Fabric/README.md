@@ -1,6 +1,6 @@
 # Smart Particles
 
-* **Summary:** Caps the total particle count to 5000, keeping the nearest particles to the player.
+* **Summary:** A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.
 
 **Smart Particles** is a lightweight client side optimization mod for Minecraft **(Fabric)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
 
@@ -19,12 +19,12 @@
 
 * **Default limit:** `5000`
 * **Minimum limit:** `0`
-* **Strict Camera Culling:** `true` (Default) - Aggressively removes particles outside the camera view.
+* **Smart Camera Culling:** `true` (Default) - Aggressively removes particles outside the camera view.
 
 ### Edit methods
 
 1. **In game:** Install **Mod Menu**, then click the settings button for Smart Particles.
-2. **Manual:** Edit `.minecraft/config/particlecap/config.json`
+2. **Manual:** Edit `.minecraft/config/smart_particles/config.json`
 
 ---
 
@@ -51,7 +51,7 @@ Requires **Fabric Loader**.
 
 Smart Particles uses Mixins to hook into Minecraft’s `ParticleManager`. Each tick:
 
-1. If **Strict Camera Culling** is enabled, particles outside the view frustum are removed immediately.
+1. If **Smart Camera Culling** is enabled, particles outside the view frustum are removed immediately.
 2. If the total particle count still exceeds the limit:
     * Measure distance from the player to each active particle
     * Identify the farthest particles
