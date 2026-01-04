@@ -1,8 +1,8 @@
-# Particle Cap
+# Smart Particles
 
 * **Summary:** Caps the total particle count to 5000, keeping the nearest particles to the player.
 
-**Particle Cap** is a lightweight client side optimization mod for Minecraft **(Fabric)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
+**Smart Particles** is a lightweight client side optimization mod for Minecraft **(Fabric)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### Edit methods
 
-1. **In game:** Install **Mod Menu**, then click the settings button for Particle Cap.
+1. **In game:** Install **Mod Menu**, then click the settings button for Smart Particles.
 2. **Manual:** Edit `.minecraft/config/particlecap/config.json`
 
 ---
@@ -49,7 +49,7 @@ Requires **Fabric Loader**.
 
 ## How it works
 
-Particle Cap uses Mixins to hook into Minecraft’s `ParticleManager`. Each tick:
+Smart Particles uses Mixins to hook into Minecraft’s `ParticleManager`. Each tick:
 
 1. If **Strict Camera Culling** is enabled, particles outside the view frustum are removed immediately.
 2. If the total particle count still exceeds the limit:
