@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "smart_particles",
+	"version": "${version}",
+	"name": "Smart Particles",
+	"description": "A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.",
+	"authors": [
+		"Andrew-Chedid"
+	],
+	"license": "MIT",
+	"icon": "assets/icon.png",
+	"environment": "client",
+	"contact": {
+		"homepage": "https://modrinth.com/mod/smart-particles",
+		"sources": "https://github.com/chedidandrew/smart_particles",
+		"issues": "https://github.com/chedidandrew/smart_particles/issues"
+	},
+	"entrypoints": {
+		"client": [
+			"sp.SPMod"
+		],
+		"modmenu": [
+			"sp.SPModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"sp.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.7",
+		"minecraft": "1.21.7",
+		"java": ">=21"
+	}
+}
