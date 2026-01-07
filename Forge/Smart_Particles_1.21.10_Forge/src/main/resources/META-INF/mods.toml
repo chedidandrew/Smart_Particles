@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="smart_particles"
-version="1.21.11"
+version="1.21.10"
 displayName="Smart Particles"
 authors="Andrew-Chedid"
 description="A performance mod that caps the total particle count."

@@ -2,7 +2,7 @@
 
 * **Summary:** A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.
 
-**Smart Particles** is a lightweight client side optimization mod for Minecraft **(Forge)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
+**Smart Particles** is a lightweight client side optimization mod for Minecraft that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
 
 ---
 

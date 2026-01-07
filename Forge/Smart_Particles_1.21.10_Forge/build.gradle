@@ -14,7 +14,7 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 minecraft {
-    mappings channel: 'official', version: '1.21.11'
+    mappings channel: 'official', version: '1.21.10'
     
     runs {
         client {
@@ -33,7 +33,7 @@ mixin {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.21.11-61.0.3'
+    minecraft 'net.minecraftforge:forge:1.21.10-60.1.5'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
