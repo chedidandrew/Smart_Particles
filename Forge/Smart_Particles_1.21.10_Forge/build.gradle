@@ -1,0 +1,92 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '6.0.+'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
+}
+
+group = project.maven_group
+version = project.mod_version
+
+base {
+    archivesName = project.archives_base_name
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+minecraft {
+    mappings channel: 'official', version: '1.21.11'
+    
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "sp.mixins.json"
+    config "sp.mixins.json"
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.21.11-61.0.3'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+configurations {
+    compileClasspath.extendsFrom(minecraft)
+}
+
+// 1. Force the compiler to generate the refmap with the specific name required by your sp.mixins.json
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-AoutRefMapFile=smart_particles.refmap.json")
+}
+
+// 2. SAFETY: Manually find and copy the generated refmap into the classes directory so it ends up in the JAR
+compileJava.doLast {
+    def targetName = "smart_particles.refmap.json"
+    
+    // The processor might put it in tmp/compileJava OR alongside the classes. We check both.
+    def potentialFiles = [
+        file("${project.buildDir}/tmp/compileJava/${targetName}"),
+        file("${project.buildDir}/classes/java/main/${targetName}"),
+        file("${project.projectDir}/${targetName}")
+    ]
+
+    def foundFile = potentialFiles.find { it.exists() }
+
+    if (foundFile) {
+        println "SUCCESS: Found generated refmap at ${foundFile}. Ensuring it is packaged."
+        // Copy to resources so the 'jar' task picks it up
+        copy {
+            from foundFile
+            into "${project.buildDir}/resources/main"
+        }
+        // Also ensure it is in the classes dir just in case
+        copy {
+            from foundFile
+            into "${project.buildDir}/classes/java/main"
+        }
+    } else {
+        println "WARNING: Could not find generated refmap named '${targetName}'. Build might crash at runtime."
+    }
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes([
+            "Specification-Title": "Smart Particles",
+            "Specification-Vendor": "chedidandrew",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": project.jar.archiveVersion,
+            "Implementation-Vendor" :"chedidandrew",
+            "MixinConfigs": "sp.mixins.json"
+        ])
+    }
+}

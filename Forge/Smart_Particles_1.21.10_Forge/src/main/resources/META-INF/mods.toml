@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[51,)"
+license="MIT"
+
+[[mods]]
+modId="smart_particles"
+version="1.21.11"
+displayName="Smart Particles"
+authors="Andrew-Chedid"
+description="A performance mod that caps the total particle count."
+logoFile="assets/icon.png"
+
+[[dependencies.smart_particles]]
+modId="forge"
+mandatory=true
+versionRange="[51,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.smart_particles]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.21.9, 1.21.12)"
+ordering="NONE"
+side="BOTH"

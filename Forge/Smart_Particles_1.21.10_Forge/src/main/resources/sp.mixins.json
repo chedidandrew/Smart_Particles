@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "sp.mixin",
+  "refmap": "smart_particles.refmap.json",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SPAccessor",
+    "ParticleManagerMixin",
+    "ParticleRendererAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
