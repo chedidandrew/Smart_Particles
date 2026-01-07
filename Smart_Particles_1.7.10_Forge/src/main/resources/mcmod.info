@@ -1,0 +1,16 @@
+[
+{
+  "modid": "smartparticles",
+  "name": "Smart Particles",
+  "description": "A performance mod that optimizes and/or limits particle rendering and particle limits for 1.7.10",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://www.curseforge.com/minecraft/mc-mods/smart-particles",
+  "updateUrl": "",
+  "authorList": ["chedidandrew"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
