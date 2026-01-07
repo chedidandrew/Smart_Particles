@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "sp.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ParticleManagerMixin",
+    "SPAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
