@@ -17,7 +17,6 @@ public class SPConfig {
     @Config.Comment("Enable smart camera frustum culling. Particles outside the screen view will be removed first.")
     public static boolean smartCameraCulling = true;
 
-    // This method ensures the config is saved when you change it in the in-game Mods menu
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(SPMod.MODID)) {

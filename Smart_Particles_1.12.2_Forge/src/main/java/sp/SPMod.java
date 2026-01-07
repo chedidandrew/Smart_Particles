@@ -34,8 +34,6 @@ public class SPMod {
 
     static {
         try {
-            // FIX: Explicitly use new String[]{} to force the correct Varargs method signature
-            // This prevents the NoSuchMethodError on older Forge versions (like RLCraft's)
             fieldPosX = ReflectionHelper.findField(Particle.class, new String[]{"posX", "field_187126_f"});
             fieldPosY = ReflectionHelper.findField(Particle.class, new String[]{"posY", "field_187127_g"});
             fieldPosZ = ReflectionHelper.findField(Particle.class, new String[]{"posZ", "field_187128_h"});
@@ -63,7 +61,6 @@ public class SPMod {
         int limit = Math.max(0, SPConfig.particleLimit);
         boolean smartCulling = SPConfig.smartCameraCulling;
 
-        // Get the list of particles
         ArrayDeque<Particle>[][] fxLayers;
         try {
             fxLayers = ReflectionHelper.getPrivateValue(ParticleManager.class, client.effectRenderer, FX_LAYERS_NAMES);
@@ -103,12 +100,11 @@ public class SPMod {
             for (ArrayDeque<Particle> queue : layer) {
                 for (Particle p : queue) {
                     try {
-                        // Use Reflection to read the protected coordinates
+
                         double pX = fieldPosX.getDouble(p);
                         double pY = fieldPosY.getDouble(p);
                         double pZ = fieldPosZ.getDouble(p);
 
-                        // Frustum Check
                         double ex = pX - camPos.x;
                         double ey = pY - camPos.y;
                         double ez = pZ - camPos.z;
@@ -146,13 +142,12 @@ public class SPMod {
                             heapSiftDown(heapParticles, heapScores, heapSize, 0);
                         }
                     } catch (IllegalAccessException e) {
-                        // Should not happen if reflection setup worked
+
                     }
                 }
             }
         }
 
-        // Cleanup
         Set<Particle> keep = Collections.newSetFromMap(new IdentityHashMap<>());
         for (int i = 0; i < heapSize; i++) {
             keep.add(heapParticles[i]);
@@ -172,7 +167,6 @@ public class SPMod {
         }
     }
 
-    // Heap Helpers
     private static void heapSiftUp(Particle[] ps, double[] ds, int idx) {
         while (idx > 0) {
             int parent = (idx - 1) >>> 1;
