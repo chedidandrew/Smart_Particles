@@ -14,7 +14,7 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 minecraft {
-    mappings channel: 'official', version: '1.21.10'
+    mappings channel: 'official', version: minecraft_version
     
     runs {
         client {
@@ -33,7 +33,7 @@ mixin {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.21.10-60.1.5'
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
@@ -53,6 +53,7 @@ compileJava.doLast {
     // The processor might put it in tmp/compileJava OR alongside the classes. We check both.
     def potentialFiles = [
         file("${project.buildDir}/tmp/compileJava/${targetName}"),
+        file("${project.buildDir}/tmp/compileJava/compileJava-refmap.json"),
         file("${project.buildDir}/classes/java/main/${targetName}"),
         file("${project.projectDir}/${targetName}")
     ]
@@ -65,11 +66,13 @@ compileJava.doLast {
         copy {
             from foundFile
             into "${project.buildDir}/resources/main"
+            rename { targetName }
         }
         // Also ensure it is in the classes dir just in case
         copy {
             from foundFile
             into "${project.buildDir}/classes/java/main"
+            rename { targetName }
         }
     } else {
         println "WARNING: Could not find generated refmap named '${targetName}'. Build might crash at runtime."

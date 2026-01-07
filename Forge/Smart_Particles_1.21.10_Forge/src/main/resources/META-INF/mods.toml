@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[51,)"
+loaderVersion="[60,)"
 license="MIT"
 
 [[mods]]
@@ -13,13 +13,13 @@ logoFile="assets/icon.png"
 [[dependencies.smart_particles]]
 modId="forge"
 mandatory=true
-versionRange="[51,)"
+versionRange="[60,)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.smart_particles]]
 modId="minecraft"
 mandatory=true
-versionRange="[1.21.9, 1.21.12)"
+versionRange="[1.21.10, 1.21.11)"
 ordering="NONE"
 side="BOTH"
