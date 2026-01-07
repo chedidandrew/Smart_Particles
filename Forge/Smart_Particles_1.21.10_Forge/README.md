@@ -2,7 +2,7 @@
 
 * **Summary:** A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.
 
-**Smart Particles** is a lightweight client side optimization mod for Minecraft **(Fabric)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
+**Smart Particles** is a lightweight client side optimization mod for Minecraft **(Forge)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
 
 ---
 
@@ -25,18 +25,6 @@
 
 1. **In game:** Install **Mod Menu**, then click the settings button for Smart Particles.
 2. **Manual:** Edit `.minecraft/config/smart_particles/config.json`
-
----
-
-## Installation and dependencies
-
-Requires **Fabric Loader**.
-
-| Dependency            | Required | Purpose                                         |
-| --------------------- | -------- | ----------------------------------------------- |
-| **Fabric API**        | Yes      | Core Fabric utilities used by the mod           |
-| **Cloth Config API**  | Optional | Settings screen and config support              |
-| **Mod Menu**          | Optional | Adds the in game Mods button and settings entry |
 
 ---
 
