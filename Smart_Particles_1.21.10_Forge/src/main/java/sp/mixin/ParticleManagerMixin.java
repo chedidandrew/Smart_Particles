@@ -23,10 +23,10 @@ import java.util.Set;
 @Mixin(ParticleEngine.class)
 public abstract class ParticleManagerMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     private Map<ParticleRenderType, Queue<Particle>> particles;
 
-    @Inject(method = "tick", at = @At("TAIL"))
+    @Inject(method = "tick", at = @At("TAIL"), remap = false)
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;

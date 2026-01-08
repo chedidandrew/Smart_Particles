@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[60,)"
+loaderVersion="[60.1,)"
 license="MIT"
 
 [[mods]]
@@ -13,7 +13,7 @@ logoFile="assets/icon.png"
 [[dependencies.smart_particles]]
 modId="forge"
 mandatory=true
-versionRange="[60,)"
+versionRange="[60.1.0,60.1.1)"
 ordering="NONE"
 side="BOTH"
 

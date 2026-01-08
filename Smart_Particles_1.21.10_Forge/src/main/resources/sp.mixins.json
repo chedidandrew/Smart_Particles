@@ -4,10 +4,9 @@
   "package": "sp.mixin",
   "refmap": "smart_particles.refmap.json",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
+  "client": [
     "SPAccessor",
-    "ParticleManagerMixin",
-    "ParticleRendererAccessor"
+    "ParticleManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
