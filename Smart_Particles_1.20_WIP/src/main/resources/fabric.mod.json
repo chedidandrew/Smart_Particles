@@ -15,6 +15,15 @@
 		"sources": "https://github.com/chedidandrew/smart_particles",
 		"issues": "https://github.com/chedidandrew/smart_particles/issues"
 	},
+	"custom": {
+		"modmenu": {
+		"links": {
+			"Modrinth": "https://modrinth.com/mod/smart-particles",
+			"Curseforge": "https://www.curseforge.com/minecraft/mc-mods/smart-particles",
+			"Buy me a coffee": "https://ko-fi.com/andrewchedid"
+		}
+		}
+	},
 	"entrypoints": {
 		"client": [
 			"sp.SPMod"
