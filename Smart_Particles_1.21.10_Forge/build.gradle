@@ -1,7 +1,6 @@
 plugins {
-    id 'net.minecraftforge.gradle' version '6.0.+'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'net.minecraftforge.gradle' version '6.0.46'
+    id 'org.spongepowered.mixin' version '0.7.38'
 }
 
 group = project.maven_group
@@ -41,16 +40,13 @@ configurations {
     compileClasspath.extendsFrom(minecraft)
 }
 
-// 1. Force the compiler to generate the refmap with the specific name required by your sp.mixins.json
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.add("-AoutRefMapFile=smart_particles.refmap.json")
 }
 
-// 2. SAFETY: Manually find and copy the generated refmap into the classes directory so it ends up in the JAR
 compileJava.doLast {
     def targetName = "smart_particles.refmap.json"
     
-    // The processor might put it in tmp/compileJava OR alongside the classes. We check both.
     def potentialFiles = [
         file("${project.buildDir}/tmp/compileJava/${targetName}"),
         file("${project.buildDir}/tmp/compileJava/compileJava-refmap.json"),
@@ -62,13 +58,11 @@ compileJava.doLast {
 
     if (foundFile) {
         println "SUCCESS: Found generated refmap at ${foundFile}. Ensuring it is packaged."
-        // Copy to resources so the 'jar' task picks it up
         copy {
             from foundFile
             into "${project.buildDir}/resources/main"
             rename { targetName }
         }
-        // Also ensure it is in the classes dir just in case
         copy {
             from foundFile
             into "${project.buildDir}/classes/java/main"
@@ -92,4 +86,7 @@ jar {
             "MixinConfigs": "sp.mixins.json"
         ])
     }
+    finalizedBy 'reobfJar'
 }
+
+tasks.named('jar').configure { finalizedBy 'reobfJar' }

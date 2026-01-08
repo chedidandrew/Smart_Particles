@@ -1,18 +1,15 @@
 package sp;
 
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-@Mod("smart_particles")
+@Mod(SPMod.MODID)
 public class SPMod {
-    
-    public SPMod() {
-        // Register the config screen using the static context to avoid constructor errors.
-        ModLoadingContext.get().registerExtensionPoint(
-            ConfigScreenHandler.ConfigScreenFactory.class,
-            () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new SPConfigScreen(screen))
-        );
+    public static final String MODID = "smart_particles";
+
+    public SPMod(FMLJavaModLoadingContext context) {
+        MinecraftForge.registerConfigScreen(SPConfigScreen::new);
         SPConfig.load();
     }
 }
