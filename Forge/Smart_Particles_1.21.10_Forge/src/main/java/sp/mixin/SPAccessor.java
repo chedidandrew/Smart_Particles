@@ -6,12 +6,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Particle.class)
 public interface SPAccessor {
-    @Accessor(value = "x", remap = false)
+    @Accessor(value = "x")
     double smartparticles$getX();
 
-    @Accessor(value = "y", remap = false)
+    @Accessor(value = "y")
     double smartparticles$getY();
 
-    @Accessor(value = "z", remap = false)
+    @Accessor(value = "z")
     double smartparticles$getZ();
 }
