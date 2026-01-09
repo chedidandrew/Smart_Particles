@@ -3,7 +3,7 @@
 	"id": "smart_particles",
 	"version": "${version}",
 	"name": "Smart Particles",
-	"description": "A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.",
+	"description": "A performance mod that greatly optimizes particle rendering and particle limits.",
 	"authors": [
 		"Andrew-Chedid"
 	],
