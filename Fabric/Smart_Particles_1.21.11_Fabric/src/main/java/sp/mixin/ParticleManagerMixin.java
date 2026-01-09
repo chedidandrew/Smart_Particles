@@ -25,7 +25,6 @@ import java.util.Set;
 @Mixin(ParticleManager.class)
 public abstract class ParticleManagerMixin {
 
-    // Shadowing as Map<..., Object> because the value is now a Renderer, not a Queue
     @Shadow
     private Map<ParticleTextureSheet, Object> particles;
 
@@ -41,8 +40,6 @@ public abstract class ParticleManagerMixin {
         int limit = Math.max(0, SPConfig.instance.particleLimit);
         boolean smartCulling = SPConfig.instance.smartCameraCulling;
 
-        // --- 1. COUNT TOTAL PARTICLES ---
-        // We must extract the size from the Renderers now
         if (!smartCulling) {
             int total = 0;
             for (Object renderer : particles.values()) {
@@ -56,7 +53,6 @@ public abstract class ParticleManagerMixin {
             if (total <= limit) return;
         }
 
-        // --- 2. PREPARE CULLING PARAMETERS ---
         Vec3d camPos = player.getEyePos();
         Vec3d camDir = player.getRotationVec(1.0F);
         double fov = client.options.getFov().getValue();
@@ -71,54 +67,52 @@ public abstract class ParticleManagerMixin {
         final double[] heapScores = new double[limit];
         int heapSize = 0;
 
-        // --- 3. BUILD PRIORITY HEAP (KEEP LIST) ---
-        for (Object renderer : particles.values()) {
-            // Skip if this isn't a renderer we can access
-            if (!(renderer instanceof ParticleRendererAccessor accessor)) continue;
-            
-            Queue<Particle> q = accessor.sp$getParticles();
-            if (q == null) continue;
-
-            for (Particle p : q) {
-                SPAccessor acc = (SPAccessor) p;
+        if (limit > 0) {
+            for (Object renderer : particles.values()) {
+                if (!(renderer instanceof ParticleRendererAccessor accessor)) continue;
                 
-                // Frustum Check
-                double ex = acc.smartparticles$getX() - camPos.x;
-                double ey = acc.smartparticles$getY() - camPos.y;
-                double ez = acc.smartparticles$getZ() - camPos.z;
-                
-                double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
-                boolean inFrustum = false;
+                Queue<Particle> q = accessor.sp$getParticles();
+                if (q == null) continue;
 
-                if (dot > 0) {
-                     double eDistSq = ex * ex + ey * ey + ez * ez;
-                     if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
-                         inFrustum = true;
-                     }
-                }
+                for (Particle p : q) {
+                    SPAccessor acc = (SPAccessor) p;
+                    
+                    double ex = acc.smartparticles$getX() - camPos.x;
+                    double ey = acc.smartparticles$getY() - camPos.y;
+                    double ez = acc.smartparticles$getZ() - camPos.z;
+                    
+                    double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
+                    boolean inFrustum = false;
 
-                if (smartCulling && !inFrustum) continue;
+                    if (dot > 0) {
+                        double eDistSq = ex * ex + ey * ey + ez * ez;
+                        if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
+                            inFrustum = true;
+                        }
+                    }
 
-                // Score Calculation
-                double dx = acc.smartparticles$getX() - px;
-                double dy = acc.smartparticles$getY() - py;
-                double dz = acc.smartparticles$getZ() - pz;
-                double distSq = dx * dx + dy * dy + dz * dz;
+                    if (smartCulling && !inFrustum) continue;
 
-                double score = distSq;
-                if (!smartCulling && !inFrustum) {
-                    score += frustumPenalty;
-                }
+                    double dx = acc.smartparticles$getX() - px;
+                    double dy = acc.smartparticles$getY() - py;
+                    double dz = acc.smartparticles$getZ() - pz;
+                    double distSq = dx * dx + dy * dy + dz * dz;
 
-                if (heapSize < limit) {
-                    heapParticles[heapSize] = p;
-                    heapScores[heapSize] = score;
-                    heapSiftUp(heapParticles, heapScores, heapSize);
-                    heapSize++;
-                } else if (score < heapScores[0]) {
-                    heapParticles[0] = p;
-                    heapScores[0] = score;
-                    heapSiftDown(heapParticles, heapScores, heapSize, 0);
+                    double score = distSq;
+                    if (!smartCulling && !inFrustum) {
+                        score += frustumPenalty;
+                    }
+
+                    if (heapSize < limit) {
+                        heapParticles[heapSize] = p;
+                        heapScores[heapSize] = score;
+                        heapSiftUp(heapParticles, heapScores, heapSize);
+                        heapSize++;
+                    } else if (score < heapScores[0]) {
+                        heapParticles[0] = p;
+                        heapScores[0] = score;
+                        heapSiftDown(heapParticles, heapScores, heapSize, 0);
+                    }
                 }
             }
         }
@@ -128,7 +122,6 @@ public abstract class ParticleManagerMixin {
             keep.add(heapParticles[i]);
         }
 
-        // --- 4. REMOVE PARTICLES NOT IN KEEP LIST ---
         for (Object renderer : particles.values()) {
             if (!(renderer instanceof ParticleRendererAccessor accessor)) continue;
             
