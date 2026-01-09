@@ -66,7 +66,7 @@ public abstract class ParticleManagerMixin {
         final double[] heapScores = new double[limit];
         int heapSize = 0;
 
-        for (Queue<Particle> q : particles.values()) {
+        if (limit > 0) for (Queue<Particle> q : particles.values()) {
             for (Particle p : q) {
                 SPAccessor acc = (SPAccessor) p;
                 
