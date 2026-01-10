@@ -1,0 +1,43 @@
+{
+	"schemaVersion": 1,
+	"id": "smart_particles",
+	"version": "${version}",
+	"name": "Smart Particles",
+	"description": "A performance mod that greatly optimizes particle rendering and particle limits.",
+	"authors": [
+		"Andrew-Chedid"
+	],
+	"license": "MIT",
+	"icon": "assets/icon.png",
+	"environment": "client",
+	"contact": {
+		"homepage": "https://www.curseforge.com/minecraft/mc-mods/smart-particles",
+		"sources": "https://github.com/chedidandrew/smart_particles",
+		"issues": "https://github.com/chedidandrew/smart_particles/issues"
+	},
+	"custom": {
+		"modmenu": {
+		"links": {
+			"Modrinth": "https://modrinth.com/mod/smart-particles",
+			"Curseforge": "https://www.curseforge.com/minecraft/mc-mods/smart-particles",
+			"Buy me a coffee": "https://ko-fi.com/andrewchedid"
+		}
+		}
+	},
+	"entrypoints": {
+		"client": [
+			"sp.SPMod"
+		],
+		"modmenu": [
+			"sp.SPModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"sp.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.7",
+		"minecraft": "1.21.11",
+		"java": ">=21"
+	}
+}

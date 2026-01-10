@@ -22,14 +22,14 @@ authors = "Andrew-Chedid"
 [[dependencies.smart_particles]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21, 21.7)"
+versionRange = "[21, 22)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.smart_particles]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21, 1.21.7)"
+versionRange = "[1.21, 1.21.9)"
 ordering = "NONE"
 side = "BOTH"
 

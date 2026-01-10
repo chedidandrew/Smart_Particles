@@ -1,6 +1,7 @@
 package sp;
 
-import net.minecraft.Util;
+// CHANGED: Util is often in 'net.minecraft.util' in some mappings
+import net.minecraft.util.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -18,7 +19,7 @@ public class SPConfigScreen extends Screen {
     private boolean smartCulling;
 
     public SPConfigScreen(Screen parent) {
-        super(Component.literal("Smart Particles Config"));
+        super(Component.literal("Smart Particles"));
         this.parent = parent;
         this.smartCulling = SPConfig.instance.smartCameraCulling;
     }
@@ -32,7 +33,7 @@ public class SPConfigScreen extends Screen {
         this.addRenderableWidget(this.cullingButton);
 
         // 2. Particle Limit Text Field
-        this.limitField = new EditBox(this.font, this.width / 2 - 100, this.height / 4 + 48 + 20, 200, 20, Component.literal("Particle Limit"));
+        this.limitField = new EditBox(this.font, this.width / 2 - 100, this.height / 4 + 68, 200, 20, Component.literal("Particle Limit"));
         this.limitField.setValue(String.valueOf(SPConfig.instance.particleLimit));
         this.limitField.setFilter(text -> text.matches("\\d*"));
         this.addRenderableWidget(this.limitField);
@@ -42,13 +43,13 @@ public class SPConfigScreen extends Screen {
             this.smartCulling = true;
             this.cullingButton.setValue(true);
             this.limitField.setValue("5000");
-        }).bounds(this.width / 2 - 100, this.height - 88, 200, 20).build()); // Moved up slightly
+        }).bounds(this.width / 2 - 100, this.height - 88, 200, 20).build());
 
         // 4. Save & Quit Button
         this.addRenderableWidget(Button.builder(Component.literal("Save & Quit"), button -> {
             save();
             this.minecraft.setScreen(this.parent);
-        }).bounds(this.width / 2 - 100, this.height - 64, 200, 20).build()); // Moved up slightly
+        }).bounds(this.width / 2 - 100, this.height - 64, 200, 20).build());
 
         // 5. Link Buttons (Ko-fi | Modrinth | Curseforge)
         int buttonWidth = 64;
@@ -70,7 +71,6 @@ public class SPConfigScreen extends Screen {
     }
 
     private void openLink(String url) {
-        // Opens the standard "Are you sure you want to open this link?" screen
         this.minecraft.setScreen(new ConfirmLinkScreen((yes) -> {
             if (yes) {
                 Util.getPlatform().openUri(URI.create(url));
@@ -92,7 +92,8 @@ public class SPConfigScreen extends Screen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
+        
+        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 4 + 10, 0xFFFFFF);
         guiGraphics.drawCenteredString(this.font, "Particle Limit:", this.width / 2, this.height / 4 + 48 + 5, 0xFFA0A0A0);
     }
 

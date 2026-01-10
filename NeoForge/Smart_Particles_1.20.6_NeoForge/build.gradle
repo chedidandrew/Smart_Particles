@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.78'
+    id 'net.neoforged.moddev' version '2.0.138'
 }
 
 version = project.mod_version
@@ -9,7 +9,6 @@ group = project.maven_group
 
 repositories {
     mavenCentral()
-    // Removed shedaniel maven
 }
 
 base {
@@ -44,7 +43,6 @@ neoForge {
 }
 
 dependencies {
-    // Removed Cloth Config dependency
 }
 
 tasks.withType(JavaCompile).configureEach {
