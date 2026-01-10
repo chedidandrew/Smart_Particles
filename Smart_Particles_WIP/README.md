@@ -2,7 +2,7 @@
 
 * **Summary:** A performance mod that caps the total particle count, keeping the nearest particles in the player's view visible.
 
-**Smart Particles** is a lightweight client side optimization mod for Minecraft **(Fabric)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
+**Smart Particles** is a lightweight client side optimization mod for Minecraft **(NeoForge)** that keeps FPS stable in particle heavy areas. Instead of blocking new particles, it keeps the most important particles visible by removing the farthest ones first.
 
 ---
 
@@ -11,7 +11,7 @@
 * **Smart culling:** When the limit is reached, the mod removes particles **farthest from the player** to make room for new nearby particles. Optional: Only keep particles in front of the camera and within the view frustum for improved performance.
 * **Hard cap protection:** Helps prevent freezes from massive particle spam (farms, explosions, modded effects).
 * **Configurable limit:** Change the maximum particle count anytime.
-* **Mod Menu integration:** In game settings screen support.
+* **Native configuration:** In-game settings screen support via the NeoForge mod list.
 
 ---
 
@@ -23,27 +23,28 @@
 
 ### Edit methods
 
-1. **In game:** Install **Mod Menu**, then click the settings button for Smart Particles.
+1. **In game:** Go to the main menu, click **Mods**, select **Smart Particles**, and click **Config**.
 2. **Manual:** Edit `.minecraft/config/smart_particles/config.json`
 
 ---
 
 ## Installation and dependencies
 
-Requires **Fabric Loader**.
+Requires **NeoForge**.
 
 | Dependency            | Required | Purpose                                         |
 | --------------------- | -------- | ----------------------------------------------- |
-| **Fabric API**        | Yes      | Core Fabric utilities used by the mod           |
-| **Cloth Config API**  | Optional | Settings screen and config support              |
-| **Mod Menu**          | Optional | Adds the in game Mods button and settings entry |
+| **NeoForge** 			| Yes      | The mod loader                                  |
+| **Java 21**			| Yes      | Required for Minecraft 1.21+                    |
+
+*No other dependencies required (Cloth Config is not needed).*
 
 ---
 
 ## Compatibility
 
 * **Client side only:** Not needed on servers. Works on vanilla and modded servers.
-* **Shader friendly:** Compatible with Sodium and Iris.
+* **Shader friendly:** Compatible with Embeddium and Oculus.
 
 ---
 
