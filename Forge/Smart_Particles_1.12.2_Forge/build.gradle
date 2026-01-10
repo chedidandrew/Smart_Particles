@@ -2,6 +2,7 @@ buildscript {
     repositories {
         mavenCentral()
         maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url "https://libraries.minecraft.net/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
@@ -10,7 +11,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "12.02.7"
+version = "12.02.8"
 group = "sp"
 archivesBaseName = "smart_particles+mc1.12.2"
 

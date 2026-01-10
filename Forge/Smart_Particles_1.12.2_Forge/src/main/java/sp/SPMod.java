@@ -131,12 +131,12 @@ public class SPMod {
                             score += frustumPenalty;
                         }
 
-                        if (heapSize < limit) {
+                        if (limit > 0 && heapSize < limit) {
                             heapParticles[heapSize] = p;
                             heapScores[heapSize] = score;
                             heapSiftUp(heapParticles, heapScores, heapSize);
                             heapSize++;
-                        } else if (score < heapScores[0]) {
+                        } else if (limit > 0 && score < heapScores[0]) {
                             heapParticles[0] = p;
                             heapScores[0] = score;
                             heapSiftDown(heapParticles, heapScores, heapSize, 0);

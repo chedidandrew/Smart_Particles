@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -21,7 +22,7 @@ public class SPConfig {
     public static void load() {
         if (Files.exists(CONFIG_PATH)) {
             try {
-                String json = Files.readString(CONFIG_PATH);
+                String json = new String(Files.readAllBytes(CONFIG_PATH), StandardCharsets.UTF_8);
                 instance = GSON.fromJson(json, SPConfig.class);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -41,7 +42,7 @@ public class SPConfig {
             if (!Files.exists(CONFIG_PATH.getParent())) {
                 Files.createDirectories(CONFIG_PATH.getParent());
             }
-            Files.writeString(CONFIG_PATH, GSON.toJson(instance));
+            Files.write(CONFIG_PATH, GSON.toJson(instance).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }
