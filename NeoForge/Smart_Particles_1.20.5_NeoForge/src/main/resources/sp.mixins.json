@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "sp.mixin",
+  "client": [
+    "SPAccessor",
+    "ParticleManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

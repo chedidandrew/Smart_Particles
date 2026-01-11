@@ -1,0 +1,37 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/chedidandrew/smart_particles/issues" #
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/smart-particles" # Maps to 'Homepage'
+
+[[mods]]
+modId = "smart_particles"
+version = "${mod_version}"
+displayName = "Smart Particles"
+description = '''
+A performance mod that greatly optimizes particle rendering and particle limits.
+
+Links:
+- Source: https://github.com/chedidandrew/Smart_Particles
+- Issues: https://github.com/chedidandrew/smart_particles/issues
+- Ko-fi: https://ko-fi.com/andrewchedid
+'''
+logoFile = "assets/icon.png"
+authors = "Andrew-Chedid"
+
+[[dependencies.smart_particles]]
+modId = "neoforge"
+type = "required"
+versionRange = "[20.4, 20.6)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.smart_particles]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.20.5, 1.20.6)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "sp.mixins.json"
