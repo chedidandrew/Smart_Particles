@@ -4,15 +4,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import java.lang.reflect.Field;
+
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -23,10 +24,10 @@ import java.util.Set;
 public class SPMod {
     public static final String MODID = "smartparticles";
     public static final String NAME = "Smart Particles";
-    public static final String VERSION = "12.02.7";
+    public static final String VERSION = "@VERSION@";
 
     // Reflection Fields
-    private static final String[] FX_LAYERS_NAMES = new String[]{"fxLayers", "field_78876_b"};
+    private static final String FX_LAYERS_SRG = "field_78876_b";
     
     private static Field fieldPosX;
     private static Field fieldPosY;
@@ -34,9 +35,9 @@ public class SPMod {
 
     static {
         try {
-            fieldPosX = ReflectionHelper.findField(Particle.class, new String[]{"posX", "field_187126_f"});
-            fieldPosY = ReflectionHelper.findField(Particle.class, new String[]{"posY", "field_187127_g"});
-            fieldPosZ = ReflectionHelper.findField(Particle.class, new String[]{"posZ", "field_187128_h"});
+            fieldPosX = ObfuscationReflectionHelper.findField(Particle.class, "field_187126_f");
+            fieldPosY = ObfuscationReflectionHelper.findField(Particle.class, "field_187127_g");
+            fieldPosZ = ObfuscationReflectionHelper.findField(Particle.class, "field_187128_h");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -63,9 +64,13 @@ public class SPMod {
 
         ArrayDeque<Particle>[][] fxLayers;
         try {
-            fxLayers = ReflectionHelper.getPrivateValue(ParticleManager.class, client.effectRenderer, FX_LAYERS_NAMES);
+            fxLayers = ObfuscationReflectionHelper.getPrivateValue(
+                ParticleManager.class,
+                client.effectRenderer,
+                FX_LAYERS_SRG
+            );
         } catch (Exception e) {
-            return; 
+            return;
         }
 
         // 1. Calculate total
@@ -80,8 +85,15 @@ public class SPMod {
         }
 
         EntityPlayerSP player = client.player;
-        Vec3d camPos = player.getPositionEyes(1.0F);
+        
+        // Use ActiveRenderInfo to get the actual camera position (handles third person offset)
+        Vec3d camPos = ActiveRenderInfo.getCameraPosition();
+        
+        // Handle view direction: In third person front (2), the camera looks opposite to the player
         Vec3d camDir = player.getLook(1.0F);
+        if (client.gameSettings.thirdPersonView == 2) {
+            camDir = camDir.scale(-1.0);
+        }
         
         double fov = client.gameSettings.fovSetting;
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
@@ -105,26 +117,34 @@ public class SPMod {
                         double pY = fieldPosY.getDouble(p);
                         double pZ = fieldPosZ.getDouble(p);
 
-                        double ex = pX - camPos.x;
-                        double ey = pY - camPos.y;
-                        double ez = pZ - camPos.z;
-
-                        double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
-                        boolean inFrustum = false;
-
-                        if (dot > 0) {
-                             double eDistSq = ex * ex + ey * ey + ez * ez;
-                             if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
-                                 inFrustum = true;
-                             }
-                        }
-
-                        if (smartCulling && !inFrustum) continue;
-
+                        // Calculate distance to player first (needed for protection radius and scoring)
                         double dx = pX - px;
                         double dy = pY - py;
                         double dz = pZ - pz;
                         double distSq = dx * dx + dy * dy + dz * dz;
+
+                        boolean inFrustum = false;
+
+                        // Protection Radius: Particles within 4 blocks (16.0 sq) are always considered "in frustum"
+                        if (distSq <= 16.0) {
+                            inFrustum = true;
+                        } else {
+                            // Standard Frustum Check relative to Camera
+                            double ex = pX - camPos.x;
+                            double ey = pY - camPos.y;
+                            double ez = pZ - camPos.z;
+
+                            double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
+
+                            if (dot > 0) {
+                                double eDistSq = ex * ex + ey * ey + ez * ez;
+                                if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
+                                    inFrustum = true;
+                                }
+                            }
+                        }
+
+                        if (smartCulling && !inFrustum) continue;
 
                         double score = distSq;
                         if (!smartCulling && !inFrustum) {

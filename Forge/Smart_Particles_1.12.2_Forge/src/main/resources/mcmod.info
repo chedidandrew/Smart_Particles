@@ -2,14 +2,14 @@
 {
   "modid": "smartparticles",
   "name": "Smart Particles",
-  "description": "A performance mod that greatly optimizes particle rendering and particle limits for 1.12.2",
-  "version": "12.02.7",
+  "description": "A performance mod that greatly optimizes particle rendering and particle limits.\n\nLinks:\n- Source: https://github.com/chedidandrew/Smart_Particles\n- Issues: https://github.com/chedidandrew/smart_particles/issues\n- Ko-fi: https://ko-fi.com/andrewchedid",
+  "version": "${version}",
   "mcversion": "1.12.2",
   "url": "https://www.curseforge.com/minecraft/mc-mods/smart-particles",
   "updateUrl": "",
-  "authorList": ["chedidandrew"],
+  "authorList": ["Andrew-Chedid"],
   "credits": "",
-  "logoFile": "",
+  "logoFile": "assets/icon.png",
   "screenshots": [],
   "dependencies": []
 }

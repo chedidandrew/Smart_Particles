@@ -9,6 +9,8 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.world.phys.Vec3;
+
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,9 +45,10 @@ public abstract class ParticleManagerMixin {
             if (total <= limit) return;
         }
 
-        Vec3 camPos = player.getEyePosition();
-        Vec3 camDir = player.getViewVector(1.0F);
-        
+        net.minecraft.client.Camera camera = client.gameRenderer.getMainCamera();
+        Vec3 camPos = camera.getPosition();
+        Vector3f camDir = camera.getLookVector();
+
         double fov = client.options.fov().get(); 
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
         double frustumPenalty = 1.0e10;
@@ -64,7 +67,12 @@ public abstract class ParticleManagerMixin {
 
                 for (Particle p : q) {
                     SPAccessor acc = (SPAccessor) p;
-                    
+
+                    double dx = acc.smartparticles$getX() - px;
+                    double dy = acc.smartparticles$getY() - py;
+                    double dz = acc.smartparticles$getZ() - pz;
+                    double distSq = dx * dx + dy * dy + dz * dz;
+
                     double ex = acc.smartparticles$getX() - camPos.x;
                     double ey = acc.smartparticles$getY() - camPos.y;
                     double ez = acc.smartparticles$getZ() - camPos.z;
@@ -72,7 +80,9 @@ public abstract class ParticleManagerMixin {
                     double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
                     boolean inFrustum = false;
 
-                    if (dot > 0) {
+                    if (distSq <= 16.0) {
+                        inFrustum = true;
+                    } else if (dot > 0) {
                         double eDistSq = ex * ex + ey * ey + ez * ez;
                         if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
                             inFrustum = true;
@@ -80,11 +90,6 @@ public abstract class ParticleManagerMixin {
                     }
 
                     if (smartCulling && !inFrustum) continue;
-
-                    double dx = acc.smartparticles$getX() - px;
-                    double dy = acc.smartparticles$getY() - py;
-                    double dz = acc.smartparticles$getZ() - pz;
-                    double distSq = dx * dx + dy * dy + dz * dz;
 
                     double score = distSq;
                     if (!smartCulling && !inFrustum) {

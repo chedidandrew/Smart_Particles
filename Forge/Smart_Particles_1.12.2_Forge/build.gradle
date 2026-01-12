@@ -11,9 +11,9 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "12.02.8"
-group = "sp"
-archivesBaseName = "smart_particles+mc1.12.2"
+version = mod_version
+group = maven_group
+archivesBaseName = archives_base_name
 
 sourceCompatibility = targetCompatibility = '1.8'
 
@@ -22,6 +22,9 @@ minecraft {
     runDir = "run"
     mappings = "stable_39"
     makeObfSourceJar = false
+    
+    replace "@VERSION@", project.version
+    replaceIn "SPMod.java"
 }
 
 repositories {
@@ -29,7 +32,6 @@ repositories {
 }
 
 dependencies {
-    // No extra dependencies needed!
 }
 
 jar {
@@ -37,5 +39,19 @@ jar {
         attributes([
             "FMLCorePluginContainsFMLMod": "true"
         ])
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
     }
 }

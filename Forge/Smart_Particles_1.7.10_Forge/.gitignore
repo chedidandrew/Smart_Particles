@@ -5,5 +5,5 @@ bin/
 *.iml
 .idea/
 .vscode/
-run/
+runs/
 logs/
