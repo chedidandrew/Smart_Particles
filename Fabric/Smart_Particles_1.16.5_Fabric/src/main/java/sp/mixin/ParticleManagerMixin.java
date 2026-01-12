@@ -45,8 +45,9 @@ public abstract class ParticleManagerMixin {
         }
 
         // Logic to calculate frustum culling parameters
-        Vec3d camPos = player.getCameraPosVec(1.0F);
-        Vec3d camDir = player.getRotationVec(1.0F);
+        net.minecraft.client.render.Camera camera = client.gameRenderer.getCamera();
+        Vec3d camPos = camera.getPos();
+        Vec3d camDir = Vec3d.fromPolar(camera.getPitch(), camera.getYaw());
         // Get FOV and add a buffer (e.g., 30 degrees) to prevent popping at screen edges
         double fov = client.options.fov;
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
@@ -79,6 +80,13 @@ public abstract class ParticleManagerMixin {
                      if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
                          inFrustum = true;
                      }
+                }
+
+                if (!inFrustum) {
+                    double pdx = acc.smartparticles$getX() - px;
+                    double pdy = acc.smartparticles$getY() - py;
+                    double pdz = acc.smartparticles$getZ() - pz;
+                    if (pdx * pdx + pdy * pdy + pdz * pdz < 16.0) inFrustum = true;
                 }
 
                 // If smart culling is enabled, completely ignore/remove invisible particles

@@ -7,6 +7,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.particle.ParticleTextureSheet;
+import net.minecraft.client.render.Camera;
 import net.minecraft.particle.ParticleGroup;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -53,8 +54,9 @@ public abstract class ParticleManagerMixin {
             if (total <= limit) return;
         }
 
-        Vec3d camPos = player.getEyePos();
-        Vec3d camDir = player.getRotationVec(1.0F);
+        Camera camera = client.gameRenderer.getCamera();
+        Vec3d camPos = camera.getCameraPos();
+        Vec3d camDir = Vec3d.fromPolar(camera.getPitch(), camera.getYaw());
         double fov = client.options.getFov().getValue();
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
         double frustumPenalty = 1.0e10;
@@ -77,6 +79,13 @@ public abstract class ParticleManagerMixin {
                 for (Particle p : q) {
                     SPAccessor acc = (SPAccessor) p;
                     
+                    double dx = acc.smartparticles$getX() - px;
+                    double dy = acc.smartparticles$getY() - py;
+                    double dz = acc.smartparticles$getZ() - pz;
+                    double distSq = dx * dx + dy * dy + dz * dz;
+
+                    boolean protectedParticle = distSq <= 16.0;
+
                     double ex = acc.smartparticles$getX() - camPos.x;
                     double ey = acc.smartparticles$getY() - camPos.y;
                     double ez = acc.smartparticles$getZ() - camPos.z;
@@ -91,15 +100,10 @@ public abstract class ParticleManagerMixin {
                         }
                     }
 
-                    if (smartCulling && !inFrustum) continue;
-
-                    double dx = acc.smartparticles$getX() - px;
-                    double dy = acc.smartparticles$getY() - py;
-                    double dz = acc.smartparticles$getZ() - pz;
-                    double distSq = dx * dx + dy * dy + dz * dz;
+                    if (smartCulling && !inFrustum && !protectedParticle) continue;
 
                     double score = distSq;
-                    if (!smartCulling && !inFrustum) {
+                    if (!smartCulling && !inFrustum && !protectedParticle) {
                         score += frustumPenalty;
                     }
 

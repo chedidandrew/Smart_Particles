@@ -1,13 +1,12 @@
 package sp.mixin;
 
 import sp.SPConfig;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.particle.ParticleTextureSheet;
-import net.minecraft.client.particle.ParticleGroup;
+import net.minecraft.client.render.Camera;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,9 +27,6 @@ public abstract class ParticleManagerMixin {
     @Shadow
     private Map<ParticleTextureSheet, Queue<Particle>> particles;
 
-    @Shadow
-    private Object2IntOpenHashMap<ParticleGroup> groupCounts;
-
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -50,8 +46,10 @@ public abstract class ParticleManagerMixin {
         }
 
         // Logic to calculate frustum culling parameters
-        Vec3d camPos = player.getEyePos();
-        Vec3d camDir = player.getRotationVec(1.0F);
+        Camera camera = client.gameRenderer.getCamera();
+        Vec3d camPos = camera.getPos();
+        Vec3d camDir = Vec3d.fromPolar(camera.getPitch(), camera.getYaw());
+        
         // Get FOV and add a buffer (e.g., 30 degrees) to prevent popping at screen edges
         double fov = client.options.fov;
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
@@ -70,6 +68,15 @@ public abstract class ParticleManagerMixin {
             for (Particle p : q) {
                 SPAccessor acc = (SPAccessor) p;
                 
+                // Calculate distance to player first for protection check
+                double dx = acc.smartparticles$getX() - px;
+                double dy = acc.smartparticles$getY() - py;
+                double dz = acc.smartparticles$getZ() - pz;
+                double distSq = dx * dx + dy * dy + dz * dz;
+
+                // Protection radius (4 blocks = 16 squared)
+                boolean protectedParticle = distSq <= 16.0;
+
                 // 1. Frustum Check: Is the particle visible?
                 double ex = acc.smartparticles$getX() - camPos.x;
                 double ey = acc.smartparticles$getY() - camPos.y;
@@ -87,17 +94,14 @@ public abstract class ParticleManagerMixin {
                 }
 
                 // If smart culling is enabled, completely ignore/remove invisible particles
-                if (smartCulling && !inFrustum) continue;
+                // Unless they are protected
+                if (smartCulling && !inFrustum && !protectedParticle) continue;
 
                 // 2. Score Calculation
-                double dx = acc.smartparticles$getX() - px;
-                double dy = acc.smartparticles$getY() - py;
-                double dz = acc.smartparticles$getZ() - pz;
-                double distSq = dx * dx + dy * dy + dz * dz;
-
                 double score = distSq;
                 // If standard culling (not smart), use penalty to prioritize keeping visible particles
-                if (!smartCulling && !inFrustum) {
+                // Unless they are protected
+                if (!smartCulling && !inFrustum && !protectedParticle) {
                     score += frustumPenalty;
                 }
 
@@ -126,21 +130,10 @@ public abstract class ParticleManagerMixin {
                 if (!keep.contains(p)) {
                     it.remove();
                     p.markDead();
-                    decrementGroupCount(p);
+                    // groupCounts update removed as it is not available/needed in this version
                 }
             }
         }
-    }
-
-    private void decrementGroupCount(Particle p) {
-        p.getGroup().ifPresent(group -> {
-            int current = groupCounts.getInt(group);
-            if (current <= 1) {
-                groupCounts.removeInt(group);
-            } else {
-                groupCounts.put(group, current - 1);
-            }
-        });
     }
 
     private static void heapSiftUp(Particle[] ps, double[] ds, int idx) {
