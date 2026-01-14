@@ -5,7 +5,6 @@ bin/
 *.iml
 .idea/
 .vscode/
+runs/
 run/
 logs/
-.eclipse/
-runs/

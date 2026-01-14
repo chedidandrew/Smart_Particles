@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[52,)"
+license="MIT"
+issueTrackerURL="https://github.com/chedidandrew/smart_particles/issues"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/smart-particles"
+
+[[mods]]
+modId="smart_particles"
+version="21.1.9-Forge"
+displayName="Smart Particles"
+description = '''
+A performance mod that greatly optimizes particle rendering and particle limits.
+
+Links:
+- Source: https://github.com/chedidandrew/Smart_Particles
+- Issues: https://github.com/chedidandrew/smart_particles/issues
+- Ko-fi: https://ko-fi.com/andrewchedid
+'''
+authors="Andrew-Chedid"
+
+[[dependencies.smart_particles]]
+modId="forge"
+mandatory=true
+versionRange="[52,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.smart_particles]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.21.1,)"
+ordering="NONE"
+side="BOTH"
