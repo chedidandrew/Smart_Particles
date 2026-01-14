@@ -34,8 +34,8 @@ Requires **NeoForge**.
 
 | Dependency            | Required | Purpose                                         |
 | --------------------- | -------- | ----------------------------------------------- |
-| **NeoForge** 			| Yes      | The mod loader                                  |
-| **Java 21**			| Yes      | Required for Minecraft 1.21+                    |
+| **NeoForge**          | Yes      | The mod loader                                  |
+| **Java 21**           | Yes      | Required for Minecraft 1.20.5+                  |
 
 *No other dependencies required (Cloth Config is not needed).*
 
@@ -52,7 +52,7 @@ Requires **NeoForge**.
 
 Smart Particles uses Mixins to hook into Minecraft’s `ParticleManager`. Each tick:
 
-1. If **Smart Camera Culling** is enabled, particles outside the view frustum are removed immediately.
+1. If **Smart Camera Culling** is enabled, particles outside the view frustum are removed, **unless they are very close (within ~4 blocks) to the player**.
 2. If the total particle count still exceeds the limit:
     * Measure distance from the player to each active particle
     * Identify the farthest particles
