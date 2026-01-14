@@ -10,10 +10,8 @@ authors = "Andrew-Chedid"
 description = '''A performance mod that greatly optimizes particle rendering and particle limits.
 
 Sources: https://github.com/chedidandrew/smart_particles
-Modrinth: https://modrinth.com/mod/smart-particles
-CurseForge: https://www.curseforge.com/minecraft/mc-mods/smart-particles
 Issues: https://github.com/chedidandrew/smart_particles/issues
-Support: https://ko-fi.com/andrewchedid'''
+Donate: https://ko-fi.com/andrewchedid'''
 
 [[mixins]]
 config = "sp.mixins.json"
@@ -28,6 +26,6 @@ side = "BOTH"
 [[dependencies.smart_particles]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.9,)"
+versionRange = "[1.21.9,1.21.11)"
 ordering = "NONE"
 side = "BOTH"
