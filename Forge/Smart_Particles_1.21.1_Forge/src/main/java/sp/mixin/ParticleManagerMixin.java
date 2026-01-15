@@ -37,6 +37,8 @@ public abstract class ParticleManagerMixin {
         int limit = Math.max(0, SPConfig.instance.particleLimit);
         boolean smartCulling = SPConfig.instance.smartCameraCulling;
 
+        double protectionThresholdSq = (client.level != null && (client.level.isRaining() || client.level.isThundering())) ? 1024.0 : 16.0;
+        
         if (!smartCulling) {
             int total = 0;
             for (Queue<Particle> q : particles.values()) {
@@ -72,6 +74,8 @@ public abstract class ParticleManagerMixin {
                     double dy = acc.smartparticles$getY() - py;
                     double dz = acc.smartparticles$getZ() - pz;
                     double distSq = dx * dx + dy * dy + dz * dz;
+                    
+                    boolean protectedParticle = distSq <= protectionThresholdSq;
 
                     double ex = acc.smartparticles$getX() - camPos.x;
                     double ey = acc.smartparticles$getY() - camPos.y;
@@ -80,7 +84,7 @@ public abstract class ParticleManagerMixin {
                     double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
                     boolean inFrustum = false;
 
-                    if (distSq <= 16.0) {
+                    if (distSq <= protectionThresholdSq) {
                         inFrustum = true;
                     } else if (dot > 0) {
                         double eDistSq = ex * ex + ey * ey + ez * ez;

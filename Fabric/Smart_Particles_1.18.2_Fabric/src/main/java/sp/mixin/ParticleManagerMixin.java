@@ -1,12 +1,14 @@
 package sp.mixin;
 
 import sp.SPConfig;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.particle.ParticleTextureSheet;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.particle.ParticleGroup;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,6 +29,9 @@ public abstract class ParticleManagerMixin {
     @Shadow
     private Map<ParticleTextureSheet, Queue<Particle>> particles;
 
+    @Shadow
+    private Object2IntOpenHashMap<ParticleGroup> groupCounts;
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -35,6 +40,8 @@ public abstract class ParticleManagerMixin {
 
         int limit = Math.max(0, SPConfig.instance.particleLimit);
         boolean smartCulling = SPConfig.instance.smartCameraCulling;
+
+        double protectionThresholdSq = (client.world != null && (client.world.isRaining() || client.world.isThundering())) ? 1024.0 : 16.0;
 
         // If not using smart culling, we can optimize by only running when the limit is exceeded.
         if (!smartCulling) {
@@ -74,8 +81,7 @@ public abstract class ParticleManagerMixin {
                 double dz = acc.smartparticles$getZ() - pz;
                 double distSq = dx * dx + dy * dy + dz * dz;
 
-                // Protection radius (4 blocks = 16 squared)
-                boolean protectedParticle = distSq <= 16.0;
+                boolean protectedParticle = distSq <= protectionThresholdSq;
 
                 // 1. Frustum Check: Is the particle visible?
                 double ex = acc.smartparticles$getX() - camPos.x;
@@ -130,10 +136,21 @@ public abstract class ParticleManagerMixin {
                 if (!keep.contains(p)) {
                     it.remove();
                     p.markDead();
-                    // groupCounts update removed as it is not available/needed in this version
+                    decrementGroupCount(p);
                 }
             }
         }
+    }
+
+    private void decrementGroupCount(Particle p) {
+        p.getGroup().ifPresent(group -> {
+            int current = groupCounts.getInt(group);
+            if (current <= 1) {
+                groupCounts.removeInt(group);
+            } else {
+                groupCounts.put(group, current - 1);
+            }
+        });
     }
 
     private static void heapSiftUp(Particle[] ps, double[] ds, int idx) {

@@ -41,6 +41,8 @@ public abstract class ParticleManagerMixin {
         int limit = Math.max(0, SPConfig.instance.particleLimit);
         boolean smartCulling = SPConfig.instance.smartCameraCulling;
 
+        double protectionThresholdSq = (client.world != null && (client.world.isRaining() || client.world.isThundering())) ? 1024.0 : 16.0;
+
         // If not using smart culling, we can optimize by only running when the limit is exceeded.
         if (!smartCulling) {
             int total = 0;
@@ -79,8 +81,7 @@ public abstract class ParticleManagerMixin {
                 double dz = acc.smartparticles$getZ() - pz;
                 double distSq = dx * dx + dy * dy + dz * dz;
 
-                // Protection radius (4 blocks = 16 squared)
-                boolean protectedParticle = distSq <= 16.0;
+                boolean protectedParticle = distSq <= protectionThresholdSq;
 
                 // 1. Frustum Check: Is the particle visible?
                 double ex = acc.smartparticles$getX() - camPos.x;
