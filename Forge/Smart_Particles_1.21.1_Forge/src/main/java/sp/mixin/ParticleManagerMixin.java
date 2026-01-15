@@ -26,7 +26,7 @@ public abstract class ParticleManagerMixin {
     private Map<ParticleRenderType, Queue<Particle>> particles;
 
     @Shadow
-    private Object2IntOpenHashMap<ParticleGroup> trackedParticleCounts;
+    private Object2IntOpenHashMap<ParticleGroup> groupCounts;
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
@@ -131,11 +131,11 @@ public abstract class ParticleManagerMixin {
     private void decrementGroupCount(Particle p) {
         if (p.getParticleGroup().isPresent()) {
             ParticleGroup group = p.getParticleGroup().get();
-            int current = trackedParticleCounts.getInt(group);
+            int current = groupCounts.getInt(group);
             if (current <= 1) {
-                trackedParticleCounts.removeInt(group);
+                groupCounts.removeInt(group);
             } else {
-                trackedParticleCounts.put(group, current - 1);
+                groupCounts.put(group, current - 1);
             }
         }
     }

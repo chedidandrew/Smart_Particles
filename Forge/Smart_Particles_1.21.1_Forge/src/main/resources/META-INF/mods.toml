@@ -8,6 +8,7 @@ displayURL="https://www.curseforge.com/minecraft/mc-mods/smart-particles"
 modId="smart_particles"
 version="21.1.9-Forge"
 displayName="Smart Particles"
+logoFile="icon.png"
 description = '''
 A performance mod that greatly optimizes particle rendering and particle limits.
 
@@ -21,13 +22,13 @@ authors="Andrew-Chedid"
 [[dependencies.smart_particles]]
 modId="forge"
 mandatory=true
-versionRange="[52,)"
+versionRange="[51,)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.smart_particles]]
 modId="minecraft"
 mandatory=true
-versionRange="[1.21.1,)"
+versionRange="[1.21.1,1.21.2)"
 ordering="NONE"
 side="BOTH"
