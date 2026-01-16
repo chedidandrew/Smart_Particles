@@ -32,6 +32,10 @@ public abstract class ParticleManagerMixin {
     @Shadow
     private Object2IntOpenHashMap<ParticleGroup> groupCounts;
 
+    private Particle[] spHeapParticles;
+    private double[] spHeapScores;
+    private Set<Particle> spKeep;
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -41,9 +45,9 @@ public abstract class ParticleManagerMixin {
         int limit = Math.max(0, SPConfig.instance.particleLimit);
         boolean smartCulling = SPConfig.instance.smartCameraCulling;
 
-        double protectionThresholdSq = (client.world != null && (client.world.isRaining() || client.world.isThundering())) ? 1024.0 : 16.0;
+        var world = client.world;
+        double protectionThresholdSq = (world != null && (world.isRaining() || world.isThundering())) ? 512.0 : 25.0;
 
-        // If not using smart culling, we can optimize by only running when the limit is exceeded.
         if (!smartCulling) {
             int total = 0;
             for (Queue<Particle> q : particles.values()) {
@@ -52,61 +56,82 @@ public abstract class ParticleManagerMixin {
             if (total <= limit) return;
         }
 
-        // Logic to calculate frustum culling parameters
         Camera camera = client.gameRenderer.getCamera();
-        Vec3d camPos = camera.getCameraPos();
+        Vec3d camPos = camera.getPos();
         Vec3d camDir = Vec3d.fromPolar(camera.getPitch(), camera.getYaw());
-        
-        // Get FOV and add a buffer (e.g., 30 degrees) to prevent popping at screen edges
+
         double fov = client.options.getFov().getValue();
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
-        // Penalty for being outside the frustum (effectively "infinite" distance)
         double frustumPenalty = 1.0e10;
 
         final double px = player.getX();
         final double py = player.getY();
         final double pz = player.getZ();
 
-        final Particle[] heapParticles = new Particle[limit];
-        final double[] heapScores = new double[limit];
+        if (limit == 0) {
+            for (Queue<Particle> q : particles.values()) {
+                Iterator<Particle> it = q.iterator();
+                while (it.hasNext()) {
+                    Particle p = it.next();
+                    it.remove();
+                    p.markDead();
+                    decrementGroupCount(p);
+                }
+            }
+            return;
+        }
+
+        if (this.spHeapParticles == null || this.spHeapParticles.length < limit) {
+            this.spHeapParticles = new Particle[limit];
+            this.spHeapScores = new double[limit];
+            this.spKeep = Collections.newSetFromMap(new IdentityHashMap<>(limit));
+        } else {
+            this.spKeep.clear();
+        }
+
+        final Particle[] heapParticles = this.spHeapParticles;
+        final double[] heapScores = this.spHeapScores;
         int heapSize = 0;
 
+        boolean dirty = false;
+
         if (limit > 0) for (Queue<Particle> q : particles.values()) {
-            for (Particle p : q) {
+            Iterator<Particle> it = q.iterator();
+            while (it.hasNext()) {
+                Particle p = it.next();
                 SPAccessor acc = (SPAccessor) p;
-                
-                // Calculate distance to player first for protection check
+
                 double dx = acc.smartparticles$getX() - px;
                 double dy = acc.smartparticles$getY() - py;
                 double dz = acc.smartparticles$getZ() - pz;
                 double distSq = dx * dx + dy * dy + dz * dz;
 
                 boolean protectedParticle = distSq <= protectionThresholdSq;
-
-                // 1. Frustum Check: Is the particle visible?
-                double ex = acc.smartparticles$getX() - camPos.x;
-                double ey = acc.smartparticles$getY() - camPos.y;
-                double ez = acc.smartparticles$getZ() - camPos.z;
-                
-                double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
                 boolean inFrustum = false;
 
-                // Check if in front of camera (dot > 0) and within the FOV cone
-                if (dot > 0) {
-                     double eDistSq = ex * ex + ey * ey + ez * ez;
-                     if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
-                         inFrustum = true;
-                     }
+                if (!protectedParticle) {
+                    double ex = acc.smartparticles$getX() - camPos.x;
+                    double ey = acc.smartparticles$getY() - camPos.y;
+                    double ez = acc.smartparticles$getZ() - camPos.z;
+
+                    double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
+
+                    if (dot > 0) {
+                        double eDistSq = ex * ex + ey * ey + ez * ez;
+                        if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
+                            inFrustum = true;
+                        }
+                    }
                 }
 
-                // If smart culling is enabled, completely ignore/remove invisible particles
-                // Unless they are protected
-                if (smartCulling && !inFrustum && !protectedParticle) continue;
+                if (smartCulling && !inFrustum && !protectedParticle) {
+                    it.remove();
+                    p.markDead();
+                    decrementGroupCount(p);
+                    continue;
+                }
 
-                // 2. Score Calculation
                 double score = distSq;
-                // If standard culling (not smart), use penalty to prioritize keeping visible particles
-                // Unless they are protected
                 if (!smartCulling && !inFrustum && !protectedParticle) {
                     score += frustumPenalty;
                 }
@@ -120,11 +145,17 @@ public abstract class ParticleManagerMixin {
                     heapParticles[0] = p;
                     heapScores[0] = score;
                     heapSiftDown(heapParticles, heapScores, heapSize, 0);
+                    dirty = true;
+                } else {
+                    it.remove();
+                    p.markDead();
+                    decrementGroupCount(p);
                 }
             }
         }
 
-        Set<Particle> keep = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (!dirty) return;
+        Set<Particle> keep = this.spKeep;
         for (int i = 0; i < heapSize; i++) {
             keep.add(heapParticles[i]);
         }
