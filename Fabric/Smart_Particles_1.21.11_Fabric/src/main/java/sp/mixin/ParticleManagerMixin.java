@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.client.particle.ParticleRenderer;
 import net.minecraft.client.particle.ParticleTextureSheet;
 import net.minecraft.client.render.Camera;
 import net.minecraft.particle.ParticleGroup;
@@ -27,7 +28,7 @@ import java.util.Set;
 public abstract class ParticleManagerMixin {
 
     @Shadow
-    private Map<ParticleTextureSheet, Queue<Particle>> particles;
+    private Map<ParticleTextureSheet, ParticleRenderer<?>> particles;
 
     @Shadow
     private Object2IntOpenHashMap<ParticleGroup> groupCounts;
@@ -50,8 +51,8 @@ public abstract class ParticleManagerMixin {
 
         if (!smartCulling) {
             int total = 0;
-            for (Queue<Particle> q : particles.values()) {
-                total += q.size();
+            for (ParticleRenderer<?> r : particles.values()) {
+                total += r.size();
             }
             if (total <= limit) return;
         }
@@ -68,12 +69,18 @@ public abstract class ParticleManagerMixin {
         final double py = player.getY();
         final double pz = player.getZ();
 
+        // 1. LIMIT = 0 LOGIC
         if (limit == 0) {
-            for (Queue<Particle> q : particles.values()) {
-                Iterator<Particle> it = q.iterator();
+            for (ParticleRenderer<?> r : particles.values()) {
+                Queue<? extends Particle> q = r.getParticles();
+                Iterator<? extends Particle> it = q.iterator();
                 while (it.hasNext()) {
-                    Particle p = it.next();
+                    Particle p = (Particle) it.next();
                     it.remove();
+                    
+                    // FIX: Null Check
+                    if (p == null) continue;
+                    
                     p.markDead();
                     decrementGroupCount(p);
                 }
@@ -95,10 +102,22 @@ public abstract class ParticleManagerMixin {
 
         boolean dirty = false;
 
-        if (limit > 0) for (Queue<Particle> q : particles.values()) {
+        // 2. MAIN SCORING LOOP
+        if (limit > 0) for (ParticleRenderer<?> r : particles.values()) {
+            Queue<? extends Particle> qView = r.getParticles();
+            @SuppressWarnings("unchecked")
+            Queue<Particle> q = (Queue<Particle>) (Queue<?>) qView;
+
             Iterator<Particle> it = q.iterator();
             while (it.hasNext()) {
                 Particle p = it.next();
+                
+                // FIX: Null Check (Safely remove garbage if found)
+                if (p == null) {
+                    it.remove();
+                    continue;
+                }
+
                 SPAccessor acc = (SPAccessor) p;
 
                 double dx = acc.smartparticles$getX() - px;
@@ -155,15 +174,28 @@ public abstract class ParticleManagerMixin {
         }
 
         if (!dirty) return;
+
         Set<Particle> keep = this.spKeep;
         for (int i = 0; i < heapSize; i++) {
             keep.add(heapParticles[i]);
         }
 
-        for (Queue<Particle> q : particles.values()) {
+        // 3. FINAL CLEANUP LOOP
+        for (ParticleRenderer<?> r : particles.values()) {
+            Queue<? extends Particle> qView = r.getParticles();
+            @SuppressWarnings("unchecked")
+            Queue<Particle> q = (Queue<Particle>) (Queue<?>) qView;
+
             Iterator<Particle> it = q.iterator();
             while (it.hasNext()) {
                 Particle p = it.next();
+                
+                // FIX: Null Check
+                if (p == null) {
+                    it.remove();
+                    continue;
+                }
+
                 if (!keep.contains(p)) {
                     it.remove();
                     p.markDead();
