@@ -1,28 +1,44 @@
 package sp.mixin;
 
 import sp.SPConfig;
-import net.minecraft.client.Camera;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleManagerMixin {
+
+    @Shadow
+    private Map<ParticleRenderType, net.minecraft.client.particle.ParticleGroup<? extends Particle>> particles;
+
+    @Shadow
+    private Object2IntOpenHashMap<ParticleLimit> trackedParticleCounts;
+
+    private Particle[] spHeapParticles;
+    private double[] spHeapScores;
+    private Set<Particle> spKeep;
+
+    private final Vector3f spTmpForward = new Vector3f();
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
@@ -30,35 +46,26 @@ public abstract class ParticleManagerMixin {
         LocalPlayer player = client.player;
         if (player == null) return;
 
-        int limit = Math.max(0, SPConfig.get().particleLimit);
-        boolean smartCulling = SPConfig.get().smartCameraCulling;
+        int limit = Math.max(0, SPConfig.instance.particleLimit);
+        boolean smartCulling = SPConfig.instance.smartCameraCulling;
 
-        final Map<ParticleRenderType, Object> particles =
-                ((ParticleRendererAccessor) (Object) this).smartParticles$getParticles();
+        ClientLevel level = client.level;
+        double protectionThresholdSq = (level != null && (level.isRaining() || level.isThundering())) ? 512.0 : 25.0;
 
         if (!smartCulling) {
             int total = 0;
-            for (Object groupObj : particles.values()) {
-                if (groupObj == null) continue;
-
-                if (groupObj instanceof Collection<?> c) {
-                    total += c.size();
-                } else {
-                    Iterable<Particle> it = asParticleIterable(groupObj);
-                    if (it != null) {
-                        for (Iterator<Particle> iter = it.iterator(); iter.hasNext(); ) {
-                            iter.next();
-                            total++;
-                        }
-                    }
-                }
+            for (net.minecraft.client.particle.ParticleGroup<? extends Particle> g : particles.values()) {
+                if (g != null) total += g.size();
             }
             if (total <= limit) return;
         }
 
-        Camera camera = client.gameRenderer.getMainCamera();
+        net.minecraft.client.Camera camera = client.gameRenderer.getMainCamera();
         Vec3 camPos = camera.position();
-        Vec3 camDir = Vec3.directionFromRotation(camera.xRot(), camera.yRot());
+
+        Quaternionf camRot = camera.rotation();
+        Vector3f fwd = this.spTmpForward.set(0f, 0f, -1f).rotate(camRot);
+        Vec3 camDir = new Vec3(fwd.x(), fwd.y(), fwd.z());
 
         double fov = client.options.fov().get();
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
@@ -68,35 +75,59 @@ public abstract class ParticleManagerMixin {
         final double py = player.getY();
         final double pz = player.getZ();
 
-        final Particle[] heapParticles = new Particle[limit];
-        final double[] heapScores = new double[limit];
+        if (limit == 0) {
+            for (net.minecraft.client.particle.ParticleGroup<? extends Particle> g : particles.values()) {
+                if (g == null || g.isEmpty()) continue;
+
+                Queue<? extends Particle> q = g.getAll();
+                Iterator<? extends Particle> it = q.iterator();
+                while (it.hasNext()) {
+                    Particle p = it.next();
+                    it.remove();
+                    p.remove();
+                    decrementGroupCount(p);
+                }
+            }
+            return;
+        }
+
+        if (this.spHeapParticles == null || this.spHeapParticles.length < limit) {
+            this.spHeapParticles = new Particle[limit];
+            this.spHeapScores = new double[limit];
+            this.spKeep = Collections.newSetFromMap(new IdentityHashMap<>(limit));
+        } else {
+            this.spKeep.clear();
+        }
+
+        final Particle[] heapParticles = this.spHeapParticles;
+        final double[] heapScores = this.spHeapScores;
         int heapSize = 0;
 
-        if (limit > 0) {
-            for (Object groupObj : particles.values()) {
-                if (groupObj == null) continue;
+        boolean dirty = false;
 
-                Iterable<Particle> group = asParticleIterable(groupObj);
-                if (group == null) continue;
+        for (net.minecraft.client.particle.ParticleGroup<? extends Particle> g : particles.values()) {
+            if (g == null || g.isEmpty()) continue;
 
-                for (Particle p : group) {
-                    if (p == null) continue;
+            Queue<? extends Particle> q = g.getAll();
+            Iterator<? extends Particle> it = q.iterator();
+            while (it.hasNext()) {
+                Particle p = it.next();
+                SPAccessor acc = (SPAccessor) p;
 
-                    SPAccessor acc = (SPAccessor) p;
+                double dx = acc.smartparticles$getX() - px;
+                double dy = acc.smartparticles$getY() - py;
+                double dz = acc.smartparticles$getZ() - pz;
+                double distSq = dx * dx + dy * dy + dz * dz;
 
-                    double dx = acc.smartparticles$getX() - px;
-                    double dy = acc.smartparticles$getY() - py;
-                    double dz = acc.smartparticles$getZ() - pz;
-                    double distSq = dx * dx + dy * dy + dz * dz;
+                boolean protectedParticle = distSq <= protectionThresholdSq;
+                boolean inFrustum = false;
 
-                    boolean protectedParticle = distSq <= 16.0;
-
+                if (!protectedParticle) {
                     double ex = acc.smartparticles$getX() - camPos.x;
                     double ey = acc.smartparticles$getY() - camPos.y;
                     double ez = acc.smartparticles$getZ() - camPos.z;
 
                     double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
-                    boolean inFrustum = false;
 
                     if (dot > 0) {
                         double eDistSq = ex * ex + ey * ey + ez * ez;
@@ -104,72 +135,70 @@ public abstract class ParticleManagerMixin {
                             inFrustum = true;
                         }
                     }
+                }
 
-                    if (smartCulling && !inFrustum && !protectedParticle) continue;
+                if (smartCulling && !inFrustum && !protectedParticle) {
+                    it.remove();
+                    p.remove();
+                    decrementGroupCount(p);
+                    continue;
+                }
 
-                    double score = distSq;
-                    if (!smartCulling && !inFrustum && !protectedParticle) {
-                        score += frustumPenalty;
-                    }
+                double score = distSq;
+                if (!smartCulling && !inFrustum && !protectedParticle) {
+                    score += frustumPenalty;
+                }
 
-                    if (heapSize < limit) {
-                        heapParticles[heapSize] = p;
-                        heapScores[heapSize] = score;
-                        heapSiftUp(heapParticles, heapScores, heapSize);
-                        heapSize++;
-                    } else if (score < heapScores[0]) {
-                        heapParticles[0] = p;
-                        heapScores[0] = score;
-                        heapSiftDown(heapParticles, heapScores, heapSize, 0);
-                    }
+                if (heapSize < limit) {
+                    heapParticles[heapSize] = p;
+                    heapScores[heapSize] = score;
+                    heapSiftUp(heapParticles, heapScores, heapSize);
+                    heapSize++;
+                } else if (score < heapScores[0]) {
+                    heapParticles[0] = p;
+                    heapScores[0] = score;
+                    heapSiftDown(heapParticles, heapScores, heapSize, 0);
+                    dirty = true;
+                } else {
+                    it.remove();
+                    p.remove();
+                    decrementGroupCount(p);
                 }
             }
         }
 
-        Set<Particle> keep = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (!dirty) return;
+
+        Set<Particle> keep = this.spKeep;
         for (int i = 0; i < heapSize; i++) {
             keep.add(heapParticles[i]);
         }
 
-        for (Object groupObj : particles.values()) {
-            if (groupObj == null) continue;
+        for (net.minecraft.client.particle.ParticleGroup<? extends Particle> g : particles.values()) {
+            if (g == null || g.isEmpty()) continue;
 
-            Iterable<Particle> group = asParticleIterable(groupObj);
-            if (group == null) continue;
-
-            Iterator<Particle> it = group.iterator();
+            Queue<? extends Particle> q = g.getAll();
+            Iterator<? extends Particle> it = q.iterator();
             while (it.hasNext()) {
                 Particle p = it.next();
                 if (!keep.contains(p)) {
-                    try {
-                        it.remove();
-                    } catch (UnsupportedOperationException ignored) {
-                    } catch (IllegalStateException ignored) {
-                    }
+                    it.remove();
                     p.remove();
+                    decrementGroupCount(p);
                 }
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static Iterable<Particle> asParticleIterable(Object groupObj) {
-        if (groupObj == null) return null;
-
-        if (groupObj instanceof Iterable<?> it) {
-            return (Iterable<Particle>) it;
-        }
-
-        try {
-            Method m = groupObj.getClass().getMethod("getAll");
-            Object all = m.invoke(groupObj);
-            if (all instanceof Iterable<?> it2) {
-                return (Iterable<Particle>) it2;
+    private void decrementGroupCount(Particle p) {
+        p.getParticleLimit().ifPresent(limit -> {
+            int current = trackedParticleCounts.getInt(limit);
+            if (current <= 1) {
+                trackedParticleCounts.removeInt(limit);
+            } else {
+                trackedParticleCounts.put(limit, current - 1);
             }
-        } catch (Throwable ignored) {
-        }
-
-        return null;
+        });
     }
 
     private static void heapSiftUp(Particle[] ps, double[] ds, int idx) {
