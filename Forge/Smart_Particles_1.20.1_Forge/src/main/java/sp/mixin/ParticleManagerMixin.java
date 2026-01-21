@@ -3,13 +3,13 @@ package sp.mixin;
 import sp.SPConfig;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.world.phys.Vec3;
-
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,7 +17,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleManagerMixin {
@@ -28,6 +33,10 @@ public abstract class ParticleManagerMixin {
     @Shadow
     private Object2IntOpenHashMap<ParticleGroup> trackedParticleCounts;
 
+    private Particle[] spHeapParticles;
+    private double[] spHeapScores;
+    private Set<Particle> spKeep;
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
@@ -36,6 +45,9 @@ public abstract class ParticleManagerMixin {
 
         int limit = Math.max(0, SPConfig.instance.particleLimit);
         boolean smartCulling = SPConfig.instance.smartCameraCulling;
+
+        ClientLevel level = client.level;
+        double protectionThresholdSq = (level != null && (level.isRaining() || level.isThundering())) ? 512.0 : 25.0;
 
         if (!smartCulling) {
             int total = 0;
@@ -49,7 +61,7 @@ public abstract class ParticleManagerMixin {
         Vec3 camPos = camera.getPosition();
         Vector3f camDir = camera.getLookVector();
 
-        double fov = client.options.fov().get(); 
+        double fov = client.options.fov().get();
         double frustumThreshold = Math.cos(Math.toRadians((fov / 2.0) + 30.0));
         double frustumPenalty = 1.0e10;
 
@@ -57,71 +69,112 @@ public abstract class ParticleManagerMixin {
         final double py = player.getY();
         final double pz = player.getZ();
 
-        final Particle[] heapParticles = new Particle[limit];
-        final double[] heapScores = new double[limit];
-        int heapSize = 0;
-
-        if (limit > 0) {
+        if (limit == 0) {
             for (Queue<Particle> q : particles.values()) {
                 if (q == null || q.isEmpty()) continue;
 
-                for (Particle p : q) {
-                    SPAccessor acc = (SPAccessor) p;
+                Iterator<Particle> it = q.iterator();
+                while (it.hasNext()) {
+                    Particle p = it.next();
+                    it.remove();
+                    p.remove();
+                    decrementGroupCount(p);
+                }
+            }
+            return;
+        }
 
-                    double dx = acc.smartparticles$getX() - px;
-                    double dy = acc.smartparticles$getY() - py;
-                    double dz = acc.smartparticles$getZ() - pz;
-                    double distSq = dx * dx + dy * dy + dz * dz;
+        if (this.spHeapParticles == null || this.spHeapParticles.length < limit) {
+            this.spHeapParticles = new Particle[limit];
+            this.spHeapScores = new double[limit];
+            this.spKeep = Collections.newSetFromMap(new IdentityHashMap<>(limit));
+        } else {
+            this.spKeep.clear();
+        }
 
+        final Particle[] heapParticles = this.spHeapParticles;
+        final double[] heapScores = this.spHeapScores;
+        int heapSize = 0;
+
+        boolean dirty = false;
+
+        for (Queue<Particle> q : particles.values()) {
+            if (q == null || q.isEmpty()) continue;
+
+            Iterator<Particle> it = q.iterator();
+            while (it.hasNext()) {
+                Particle p = it.next();
+                SPAccessor acc = (SPAccessor) p;
+
+                double dx = acc.smartparticles$getX() - px;
+                double dy = acc.smartparticles$getY() - py;
+                double dz = acc.smartparticles$getZ() - pz;
+                double distSq = dx * dx + dy * dy + dz * dz;
+
+                boolean protectedParticle = distSq <= protectionThresholdSq;
+                boolean inFrustum = false;
+
+                if (!protectedParticle) {
                     double ex = acc.smartparticles$getX() - camPos.x;
                     double ey = acc.smartparticles$getY() - camPos.y;
                     double ez = acc.smartparticles$getZ() - camPos.z;
-                    
-                    double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
-                    boolean inFrustum = false;
 
-                    if (distSq <= 16.0) {
-                        inFrustum = true;
-                    } else if (dot > 0) {
+                    double dot = ex * camDir.x + ey * camDir.y + ez * camDir.z;
+
+                    if (dot > 0) {
                         double eDistSq = ex * ex + ey * ey + ez * ez;
                         if (dot * dot > frustumThreshold * frustumThreshold * eDistSq) {
                             inFrustum = true;
                         }
                     }
+                }
 
-                    if (smartCulling && !inFrustum) continue;
+                if (smartCulling && !inFrustum && !protectedParticle) {
+                    it.remove();
+                    p.remove();
+                    decrementGroupCount(p);
+                    continue;
+                }
 
-                    double score = distSq;
-                    if (!smartCulling && !inFrustum) {
-                        score += frustumPenalty;
-                    }
+                double score = distSq;
+                if (!smartCulling && !inFrustum && !protectedParticle) {
+                    score += frustumPenalty;
+                }
 
-                    if (heapSize < limit) {
-                        heapParticles[heapSize] = p;
-                        heapScores[heapSize] = score;
-                        heapSiftUp(heapParticles, heapScores, heapSize);
-                        heapSize++;
-                    } else if (score < heapScores[0]) {
-                        heapParticles[0] = p;
-                        heapScores[0] = score;
-                        heapSiftDown(heapParticles, heapScores, heapSize, 0);
-                    }
+                if (heapSize < limit) {
+                    heapParticles[heapSize] = p;
+                    heapScores[heapSize] = score;
+                    heapSiftUp(heapParticles, heapScores, heapSize);
+                    heapSize++;
+                } else if (score < heapScores[0]) {
+                    heapParticles[0] = p;
+                    heapScores[0] = score;
+                    heapSiftDown(heapParticles, heapScores, heapSize, 0);
+                    dirty = true;
+                } else {
+                    it.remove();
+                    p.remove();
+                    decrementGroupCount(p);
                 }
             }
         }
 
-        Set<Particle> keep = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (!dirty) return;
+
+        Set<Particle> keep = this.spKeep;
         for (int i = 0; i < heapSize; i++) {
             keep.add(heapParticles[i]);
         }
 
         for (Queue<Particle> q : particles.values()) {
+            if (q == null || q.isEmpty()) continue;
+
             Iterator<Particle> it = q.iterator();
             while (it.hasNext()) {
                 Particle p = it.next();
                 if (!keep.contains(p)) {
                     it.remove();
-                    p.remove(); 
+                    p.remove();
                     decrementGroupCount(p);
                 }
             }
