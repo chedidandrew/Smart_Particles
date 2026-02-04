@@ -16,7 +16,7 @@ buildscript {
 apply plugin: 'forge'
 
 group = "sp"
-version = "7.10.9-Forge"
+version = "7.10.9a-Forge"
 archivesBaseName = "smart_particles+mc1.7.10"
 
 minecraft {
