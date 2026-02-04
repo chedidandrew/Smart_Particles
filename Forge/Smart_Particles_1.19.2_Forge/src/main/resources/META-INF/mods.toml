@@ -16,7 +16,7 @@ Links:
 - Issues: https://github.com/chedidandrew/smart_particles/issues
 - Ko-fi: https://ko-fi.com/andrewchedid
 '''
-logoFile = "assets/icon.png"
+logoFile = "icon.png"
 authors = "Andrew-Chedid"
 
 [[dependencies.${mod_id}]]
