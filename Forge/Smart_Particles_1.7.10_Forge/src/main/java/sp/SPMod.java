@@ -177,11 +177,10 @@ public class SPMod {
         }
 
         for (List<EntityFX> layer : fxLayers) {
-            Iterator<EntityFX> it = layer.iterator();
-            while (it.hasNext()) {
-                EntityFX p = it.next();
+            for (int i = layer.size() - 1; i >= 0; i--) {
+                EntityFX p = layer.get(i);
                 if (!keep.contains(p)) {
-                    it.remove();
+                    layer.remove(i);
                     p.setDead();
                 }
             }
