@@ -57,7 +57,7 @@ public abstract class ParticleManagerMixin {
             if (total <= limit) return;
         }
 
-        Camera camera = client.gameRenderer.mainCamera();
+        Camera camera = client.gameRenderer.getMainCamera();
         Vec3 camPos = camera.position();
         Vec3 camDir = Vec3.directionFromRotation(camera.xRot(), camera.yRot());
 
