@@ -14,8 +14,9 @@ The codebase is organized by Mod Loader and then by Minecraft Version. Each sub-
 
 Contains source code for the **Fabric** mod loader.
 
-* **Supported Versions:** 1.16.5 up to 1.21.x
-* **Key Dependencies:** Fabric API, Cloth Config (optional for some versions).
+* **Supported Versions:** 1.16.5 through 1.21.x, plus 26.1 / 26.1.1 / 26.1.2 calendar-version builds.
+* **Key Dependencies:** Fabric API, Cloth Config, and Mod Menu for config integration.
+* **Java:** Requirements vary by Minecraft version; 26.x Fabric builds require JDK 25.
 
 ### 📂 [Forge](./Forge)
 
@@ -44,11 +45,13 @@ Since each version is an isolated project, you must build them individually.
    * *Example:* `cd Fabric/Smart_Particles_1.21.1_Fabric`
 
 2. **Run the build command**:
-   * **Windows:** `gradlew build`
-   * **Linux/macOS:** `./gradlew build`
+   * **Windows:** `.\gradlew.bat clean build`
+   * **Linux/macOS:** `./gradlew clean build`
 
 3. **Locate the Output:**
    * The compiled `.jar` file will be found in the `build/libs/` directory inside that specific project folder.
+
+Each version folder controls its own Minecraft target, dependency versions, Java level, and output jar name through its local Gradle files.
 
 ---
 
