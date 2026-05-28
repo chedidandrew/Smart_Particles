@@ -1,0 +1,31 @@
+license = "MIT"
+
+[[mods]]
+modId = "smart_particles"
+version = "${mod_version}"
+displayName = "Smart Particles"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/smart-particles"
+logoFile = "assets/icon.png"
+authors = "Andrew-Chedid"
+description = '''A performance mod that greatly optimizes particle rendering and particle limits.
+
+Sources: https://github.com/chedidandrew/smart_particles
+Issues: https://github.com/chedidandrew/smart_particles/issues
+Donate: https://ko-fi.com/andrewchedid'''
+
+[[mixins]]
+config = "sp.mixins.json"
+
+[[dependencies.smart_particles]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neo_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.smart_particles]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"

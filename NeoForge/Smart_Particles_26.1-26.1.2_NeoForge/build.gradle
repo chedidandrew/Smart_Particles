@@ -1,0 +1,98 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+    maven { url = "https://maven.terraformersmc.com/releases/" }
+}
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        smart_particles {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+    options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.named('processResources') {
+    var replaceProperties = [
+            mod_version: project.mod_version,
+            minecraft_version_range: project.minecraft_version_range,
+            neo_version_range: project.neo_version_range
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand replaceProperties
+    }
+}
+
+def compatibilityJars = [
+        [taskName: 'jarMinecraft261', modVersion: '26.1.10'],
+        [taskName: 'jarMinecraft2611', modVersion: '26.1.1.10']
+]
+
+compatibilityJars.each { variant ->
+    tasks.register(variant.taskName, Jar) {
+        dependsOn tasks.named('classes')
+        group = 'build'
+        description = "Builds ${project.archives_base_name}-${variant.modVersion}.jar from the shared 26.1.x codebase."
+        archiveBaseName = project.archives_base_name
+        archiveVersion = variant.modVersion
+        destinationDirectory = layout.buildDirectory.dir('libs')
+
+        from(sourceSets.main.output) {
+            exclude 'META-INF/neoforge.mods.toml'
+        }
+        from('src/main/resources') {
+            include 'META-INF/neoforge.mods.toml'
+            expand([
+                    mod_version: variant.modVersion,
+                    minecraft_version_range: project.minecraft_version_range,
+                    neo_version_range: project.neo_version_range
+            ])
+        }
+        from('LICENSE') {
+            rename { "${it}_${project.archives_base_name}" }
+        }
+    }
+}
+
+tasks.named('assemble') {
+    dependsOn compatibilityJars.collect { tasks.named(it.taskName) }
+}

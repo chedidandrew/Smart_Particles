@@ -28,8 +28,10 @@ Contains source code for the **Minecraft Forge** mod loader.
 
 Contains source code for the **NeoForge** mod loader.
 
-* **Supported Versions:** 1.20.4+
-* **Features:** Native GUI integration via the mod list.
+* **Supported Versions:** 1.20.4+, including shared 26.1 / 26.1.1 / 26.1.2 calendar-version builds.
+* **Dependencies:** NeoForge only; no Cloth Config dependency.
+* **Java:** Requirements vary by Minecraft version; 26.x NeoForge builds require JDK 25.
+* **Features:** Native GUI integration via the NeoForge mod list.
 
 ### 📂 [WIP / Experimental](./Smart_Particles_WIP)
 
