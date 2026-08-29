@@ -60,5 +60,10 @@ All notable source, build, compatibility, and performance changes are recorded h
 - Initial Fabric clean build failed because Loom 1.17 removed `modImplementation`; corrected in commit `2d57fcf`.
 - Second Fabric clean build reached Java compilation and exposed Minecraft 26.2 API changes plus Mod Menu's Fabric API compile requirement.
 - Initial and second NeoForge clean builds reached Java compilation and exposed the same Minecraft 26.2 API changes.
-- Third clean-build matrix is pending after the accessor and GUI API corrections.
+- Code commit `e325640a606ebbbe848ea933983f3fbccfad3e7e` passed the complete Fabric and NeoForge matrix in GitHub Actions push run `33235002059`.
+- Fabric completed `clean build`, playable-JAR verification, SHA-256 generation, and artifact upload successfully.
+- NeoForge completed `clean build`, playable-JAR verification, SHA-256 generation, and artifact upload successfully.
+- The downloaded JAR checksums matched the workflow checksum files, and both archives passed metadata and class-content inspection.
+- Fabric test JAR: `smart_particles+mc26.2-1.15.0.jar`, SHA-256 `58a22aeba0ccc6d3c19edc4849163507ccc6081f3ebbb0c8424e3b8e9a6ce7f4`.
+- NeoForge test JAR: `smart_particles-26.2.11.jar`, SHA-256 `457725fca4bf98953f8f62a1afe8120a0fc09f881ae566f15b408e5117aaaf62`.
 - In-game validation remains required before publication.

@@ -9,13 +9,16 @@ This repository contains the source code for **Smart Particles**, a lightweight 
 - Latest published line: Minecraft 26.1.x
 - Current test target: Minecraft 26.2
 - Test branch: `update/minecraft-26.2-test`
+- Draft pull request: `#8`
 - Fabric test version: `1.15.0`
 - NeoForge test version: `26.2.11`
 - Automated test builds: `.github/workflows/build-26.2-test.yml`
+- Clean Fabric and NeoForge builds: passed at code commit `e325640a606ebbbe848ea933983f3fbccfad3e7e`
+- In-game validation: pending before publication
 
 The Minecraft 26.2 work is intentionally isolated from the published 26.1.x projects. Nothing in this branch publishes to Modrinth or CurseForge automatically.
 
-See [`docs/minecraft-26.2-port.md`](./docs/minecraft-26.2-port.md) for the compatibility matrix, implementation notes, performance changes, and gameplay test checklist.
+See [`docs/minecraft-26.2-port.md`](./docs/minecraft-26.2-port.md) for the compatibility matrix, implementation notes, performance changes, exact test artifact checksums, clean-build history, and gameplay test checklist.
 
 ---
 
@@ -32,7 +35,7 @@ Contains source code for the **Fabric** mod loader.
 - **Minecraft 26.2 Java:** JDK 25.
 - **26.2 Project:** [`Fabric/Smart_Particles_26.2_Fabric`](./Fabric/Smart_Particles_26.2_Fabric)
 
-The 26.2 Fabric port no longer requires Fabric API or Cloth Config for Smart Particles itself. Its configuration screen uses Minecraft's native GUI classes.
+The 26.2 Fabric port does not declare Fabric API or Cloth Config as hard Smart Particles runtime requirements. Fabric API is used on the development classpath because the optional Mod Menu 26.2 artifact relies on Fabric API interface injection. The Smart Particles configuration screen uses Minecraft's native GUI classes.
 
 ### 📂 [Forge](./Forge)
 
@@ -90,6 +93,8 @@ Do not install a file whose name ends in `-sources.jar`.
 ## Validation Policy
 
 A successful Gradle build verifies that the source compiles against the selected loader and Minecraft APIs. It does not replace gameplay testing. New ports should remain on a test branch until the checks in [`docs/minecraft-26.2-port.md`](./docs/minecraft-26.2-port.md) are completed.
+
+The Minecraft 26.2 test JARs have passed clean CI compilation, playable-JAR discovery, checksum generation, and archive metadata inspection. They have not yet completed in-game validation.
 
 ---
 

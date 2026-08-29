@@ -112,7 +112,36 @@ The prior implementation could perform the full bounded nearest-particle selecti
 2. Commit `2d57fcf` changed the optional Mod Menu dependency to the current `implementation` configuration and updated the GitHub Actions majors.
 3. The second Fabric build reached Java compilation. It exposed the Mod Menu Fabric API interface-injection requirement and the shared Minecraft 26.2 API removals.
 4. The first two NeoForge builds reached Java compilation and exposed the same shared Minecraft API removals.
-5. The next matrix run validates the new main-camera accessor, particle-queue accessor, GUI navigation, utility import, save-time input validation, and Fabric API development classpath.
+5. Commit `e325640a606ebbbe848ea933983f3fbccfad3e7e` added the main-camera accessor, particle-queue accessor, GUI navigation update, utility import correction, save-time input validation, and Fabric API development classpath.
+6. GitHub Actions push run `33235002059` passed both loader jobs from a clean checkout on Java 25.
+7. Fabric reported `BUILD SUCCESSFUL` after compile, resource processing, JAR generation, and checks.
+8. NeoForge reported `BUILD SUCCESSFUL` after Minecraft artifact creation, compile, resource processing, JAR generation, and checks.
+9. Both jobs found a playable JAR, generated a SHA-256 file, and uploaded the test artifact.
+10. Downloaded artifacts were independently inspected. Their JAR hashes matched the workflow checksum files, required metadata was present, and the expected Smart Particles classes and mixins were included.
+
+## Validated Test Artifacts
+
+These binaries were generated from code commit `e325640a606ebbbe848ea933983f3fbccfad3e7e` in GitHub Actions push run `33235002059`.
+
+| Loader | Runtime JAR | Size | SHA-256 | Workflow artifact ID |
+| --- | --- | ---: | --- | ---: |
+| Fabric | `smart_particles+mc26.2-1.15.0.jar` | 56,094 bytes | `58a22aeba0ccc6d3c19edc4849163507ccc6081f3ebbb0c8424e3b8e9a6ce7f4` | `9709646600` |
+| NeoForge | `smart_particles-26.2.11.jar` | 55,384 bytes | `457725fca4bf98953f8f62a1afe8120a0fc09f881ae566f15b408e5117aaaf62` | `9709648532` |
+
+Workflow archive digests:
+
+- Fabric ZIP artifact: `sha256:1263edc0582682f6869df4495bac7ee7cc5616e519fceda8ccb4e37873c17596`.
+- NeoForge ZIP artifact: `sha256:095b6e31a71f50211721d51788f60a3e4983ea09c36fbc89b263b09cd0b81bbb`.
+
+Validation completed so far:
+
+- Clean compilation passed for Fabric and NeoForge.
+- Playable JAR discovery passed for Fabric and NeoForge.
+- Workflow and independently recalculated JAR checksums matched.
+- Fabric metadata targets Minecraft 26.2, Fabric Loader 0.19.3 or newer, and Java 25 or newer.
+- NeoForge metadata targets Minecraft 26.2, NeoForge 26.2.0.67 through the 26.2 line, and Java 25 or newer.
+- Expected configuration, entrypoint, accessor, and particle mixin classes are present.
+- No gameplay claim has been made. In-game testing is still required.
 
 ## Automated Build
 
@@ -123,6 +152,14 @@ Workflow:
 ```
 
 The workflow builds Fabric and NeoForge independently on Java 25 and uploads only playable JARs, excluding source JARs. Artifacts are retained for 14 days.
+
+Validated run:
+
+```text
+GitHub Actions run: 33235002059
+Code commit: e325640a606ebbbe848ea933983f3fbccfad3e7e
+Result: Fabric success, NeoForge success
+```
 
 Local commands:
 
@@ -171,12 +208,14 @@ Do not publish a percentage improvement without repeatable measurements from the
 
 ## Publication Checklist
 
-- Both GitHub Actions jobs pass from a clean checkout.
-- Both downloaded JARs pass the gameplay checklist.
-- No critical errors appear in `latest.log`.
-- Confirm the final version numbers and filenames.
-- Update this document and `CHANGELOG.md` with the gameplay results.
-- Merge the test pull request only after validation.
-- Upload the exact tested JARs to Modrinth and CurseForge.
-- Mark the release as Minecraft 26.2 and select the correct loader for each file.
-- Preserve the SHA-256 checksums of the published files.
+- [x] Both GitHub Actions jobs pass from a clean checkout.
+- [x] Exact test JAR checksums are recorded.
+- [x] Downloaded JAR metadata and class contents are inspected.
+- [ ] Both downloaded JARs pass the gameplay checklist.
+- [ ] No critical errors appear in `latest.log`.
+- [ ] Confirm the final publication version numbers and filenames.
+- [ ] Update this document and `CHANGELOG.md` with the gameplay results.
+- [ ] Merge the test pull request only after validation.
+- [ ] Upload the exact tested JARs to Modrinth and CurseForge.
+- [ ] Mark the release as Minecraft 26.2 and select the correct loader for each file.
+- [ ] Preserve the SHA-256 checksums of the published files.
