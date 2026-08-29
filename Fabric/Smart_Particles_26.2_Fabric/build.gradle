@@ -19,6 +19,10 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+    // Smart Particles core does not call Fabric API, but Mod Menu's 26.2
+    // development artifact injects Fabric API interfaces into Minecraft classes.
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
     // Optional at runtime. This provides the Mods screen configuration button.
     implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 }

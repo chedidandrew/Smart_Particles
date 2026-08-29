@@ -13,10 +13,11 @@ The work is isolated on `update/minecraft-26.2-test`. Previously published sourc
 | Fabric | 26.2 | Fabric Loader 0.19.3, Fabric Loom 1.17-SNAPSHOT | 25 | 1.15.0 |
 | NeoForge | 26.2 | NeoForge 26.2.0.67, ModDevGradle 2.0.144 | 25 | 26.2.11 |
 
-Optional Fabric integration:
+Fabric development integration:
 
+- Fabric API 0.158.0+26.2 is on the build and CI classpath because Mod Menu 20.0.1 injects Fabric API interfaces into Minecraft classes.
 - Mod Menu 20.0.1 provides the Mods screen configuration button.
-- Fabric API is not used by Smart Particles 1.15.0.
+- Smart Particles does not call Fabric API and does not declare it as a hard dependency in `fabric.mod.json`.
 - Cloth Config is not used by Smart Particles 1.15.0.
 
 ## New Project Locations
@@ -33,6 +34,11 @@ Each folder is an independent Gradle project with its own wrapper, metadata, sou
 ### Shared code
 
 - Ported the particle engine mixin to Minecraft 26.2 types, including `ParticleGroup`, `ParticleRenderType`, and tracked `ParticleLimit` counts.
+- Added a `GameRenderer` Mixin accessor because Minecraft 26.2 removed the public main-camera getter while retaining a private `mainCamera` field.
+- Added a `ParticleGroup` Mixin accessor because Minecraft 26.2 removed `getAll()` and keeps the particle queue as a protected field.
+- Updated screen navigation to `Minecraft.gui.setScreen`.
+- Corrected the utility import to `net.minecraft.util.Util`.
+- Removed the obsolete `EditBox.setFilter` call and validate the particle limit when the screen saves.
 - Retained explicit decrementing of tracked particle-group counts when Smart Particles removes a particle.
 - Retained the existing configuration location and defaults.
 - Updated the configuration parser to recover from malformed JSON instead of preventing client initialization.
@@ -41,9 +47,10 @@ Each folder is an independent Gradle project with its own wrapper, metadata, sou
 ### Fabric
 
 - Updated Minecraft, Loader, Loom, Gradle, and Java metadata for 26.2.
-- Kept Mod Menu as an optional compile/runtime integration.
+- Kept Mod Menu as an optional integration.
 - Replaced Cloth Config with a native screen using Minecraft GUI controls.
-- Removed the Fabric API dependency because the 26.2 implementation does not call Fabric API classes.
+- Removed Fabric API as a hard Smart Particles metadata dependency because the core implementation does not call Fabric API classes.
+- Added Fabric API to the development classpath to satisfy Mod Menu 20.0.1's interface-injection compile requirements.
 - Updated `fabric.mod.json` to declare Minecraft 26.2 and Java 25.
 
 ### NeoForge
@@ -80,7 +87,7 @@ The prior implementation could perform the full bounded nearest-particle selecti
 
 5. **Reduced object retention**
 
-   Heap slots are cleared after selection. The identity set is cleared after use. Oversized arrays and sets are released when the user substantially lowers the particle cap.
+   Heap slots are cleared after selection. The identity set is cleared after use. Oversized arrays and sets are released when the user substantially lowers the particle cap, including when no particles are active.
 
 6. **Defensive configuration ceiling**
 
@@ -98,6 +105,14 @@ The prior implementation could perform the full bounded nearest-particle selecti
 - No background threads touch Minecraft particle collections. Those collections are owned by the client thread, and parallel mutation would introduce correctness and compatibility risk.
 - No fixed multi-tick delay was added to enforcement. A delay could reduce CPU use, but it would also allow larger transient particle spikes and should be evaluated with profiling data first.
 - No spatial partitioning cache was added. Maintaining such a cache may cost more than it saves for normal particle counts and would increase mixin complexity.
+
+## Clean-Build History
+
+1. The first Fabric build failed during Gradle configuration because Loom 1.17 removed `modImplementation`.
+2. Commit `2d57fcf` changed the optional Mod Menu dependency to the current `implementation` configuration and updated the GitHub Actions majors.
+3. The second Fabric build reached Java compilation. It exposed the Mod Menu Fabric API interface-injection requirement and the shared Minecraft 26.2 API removals.
+4. The first two NeoForge builds reached Java compilation and exposed the same shared Minecraft API removals.
+5. The next matrix run validates the new main-camera accessor, particle-queue accessor, GUI navigation, utility import, save-time input validation, and Fabric API development classpath.
 
 ## Automated Build
 
@@ -126,6 +141,8 @@ Run these checks separately with the Fabric and NeoForge JARs:
 - Start Minecraft 26.2 and reach the title screen without mixin or metadata errors.
 - Open the Mods screen and confirm Smart Particles metadata and icon are present.
 - Open the configuration screen, save both settings, restart, and confirm persistence.
+- On Fabric, test with Fabric API and Mod Menu installed.
+- On Fabric, test Smart Particles without Fabric API and Mod Menu to verify standalone startup.
 - Test the default 5,000-particle cap.
 - Test a small cap such as 100.
 - Test a zero cap.

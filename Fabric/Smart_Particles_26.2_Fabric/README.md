@@ -9,7 +9,9 @@ This is the Minecraft 26.2 Fabric test port of Smart Particles.
 - Java 25
 - Mod Menu 20.0.1 is optional and adds the in-game Config button
 
-Smart Particles no longer requires Fabric API or Cloth Config for its own runtime. The configuration screen now uses Minecraft's native GUI classes.
+Fabric API 0.158.0+26.2 is present on the development and CI classpath because Mod Menu's 26.2 artifact uses Fabric API interface injection. Smart Particles core does not call Fabric API and `fabric.mod.json` does not declare it as a hard dependency. Cloth Config is not used.
+
+For the first gameplay test, install Fabric API and Mod Menu together. Also test the Smart Particles JAR without either optional mod to confirm standalone startup.
 
 ## Performance changes in 1.15.0
 
@@ -19,8 +21,15 @@ Smart Particles no longer requires Fabric API or Cloth Config for its own runtim
 - Caches the FOV-derived camera threshold until FOV changes.
 - Skips empty particle groups.
 - Clears temporary heap and identity-set references after use so removed particles can be reclaimed sooner.
-- Shrinks unusually large temporary buffers after the configured limit is reduced.
+- Releases unusually large temporary buffers after the configured limit is reduced, including when no particles are active.
 - Caps manual configuration values at 1,000,000 particles to prevent accidental oversized allocations.
+
+## Minecraft 26.2 API changes
+
+- Screen transitions now use `Minecraft.gui.setScreen`.
+- The main render camera is accessed through a small Mixin accessor because the old public getter was removed.
+- Particle queues are accessed through a small Mixin accessor because `ParticleGroup.getAll()` was removed.
+- Particle-limit text is parsed and validated on save because `EditBox.setFilter` was removed.
 
 ## Build
 

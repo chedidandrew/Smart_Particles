@@ -61,19 +61,21 @@ public abstract class ParticleManagerMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo callbackInfo) {
         Minecraft client = Minecraft.getInstance();
+        SPConfig config = SPConfig.get();
+        int limit = SPConfig.clampParticleLimit(config.particleLimit);
+        boolean smartCulling = config.smartCameraCulling;
+
         LocalPlayer player = client.player;
         if (player == null) {
+            smartparticles$releaseOversizedBuffers(limit);
             return;
         }
 
         int total = smartparticles$countParticles();
         if (total == 0) {
+            smartparticles$releaseOversizedBuffers(limit);
             return;
         }
-
-        SPConfig config = SPConfig.get();
-        int limit = SPConfig.clampParticleLimit(config.particleLimit);
-        boolean smartCulling = config.smartCameraCulling;
 
         if (limit == 0) {
             smartparticles$clearAllParticles();
@@ -86,7 +88,7 @@ public abstract class ParticleManagerMixin {
             return;
         }
 
-        Camera camera = client.gameRenderer.getMainCamera();
+        Camera camera = ((GameRendererAccessor) (Object) client.gameRenderer).smartparticles$getMainCamera();
         Vec3 cameraPosition = camera.position();
         Vector3f forward = this.smartparticles$forward.set(0.0F, 0.0F, -1.0F).rotate(camera.rotation());
         double directionX = forward.x();
@@ -146,8 +148,7 @@ public abstract class ParticleManagerMixin {
                 continue;
             }
 
-            Queue<? extends Particle> queue = group.getAll();
-            Iterator<? extends Particle> iterator = queue.iterator();
+            Iterator<Particle> iterator = smartparticles$getParticles(group).iterator();
             while (iterator.hasNext()) {
                 Particle particle = iterator.next();
                 iterator.remove();
@@ -171,7 +172,7 @@ public abstract class ParticleManagerMixin {
                 continue;
             }
 
-            Iterator<? extends Particle> iterator = group.getAll().iterator();
+            Iterator<Particle> iterator = smartparticles$getParticles(group).iterator();
             while (iterator.hasNext()) {
                 Particle particle = iterator.next();
                 if (particle == null) {
@@ -222,7 +223,7 @@ public abstract class ParticleManagerMixin {
                 continue;
             }
 
-            Iterator<? extends Particle> iterator = group.getAll().iterator();
+            Iterator<Particle> iterator = smartparticles$getParticles(group).iterator();
             while (iterator.hasNext()) {
                 Particle particle = iterator.next();
                 if (particle == null) {
@@ -288,7 +289,7 @@ public abstract class ParticleManagerMixin {
                     continue;
                 }
 
-                Iterator<? extends Particle> iterator = group.getAll().iterator();
+                Iterator<Particle> iterator = smartparticles$getParticles(group).iterator();
                 while (iterator.hasNext()) {
                     Particle particle = iterator.next();
                     if (particle == null) {
@@ -304,6 +305,11 @@ public abstract class ParticleManagerMixin {
         }
 
         Arrays.fill(heapParticles, 0, heapSize, null);
+    }
+
+    @Unique
+    private static Queue<Particle> smartparticles$getParticles(ParticleGroup<?> group) {
+        return ((ParticleGroupAccessor) (Object) group).smartparticles$getParticles();
     }
 
     @Unique

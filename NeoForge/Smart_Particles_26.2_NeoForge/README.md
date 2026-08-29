@@ -16,9 +16,16 @@ This is the Minecraft 26.2 NeoForge test port of Smart Particles.
 - Caches the FOV-derived camera threshold until FOV changes.
 - Skips empty particle groups.
 - Clears temporary heap and identity-set references after use so removed particles can be reclaimed sooner.
-- Shrinks unusually large temporary buffers after the configured limit is reduced.
+- Releases unusually large temporary buffers after the configured limit is reduced, including when no particles are active.
 - Caps manual configuration values at 1,000,000 particles to prevent accidental oversized allocations.
 - Removes the unused particle-renderer accessor from the new port.
+
+## Minecraft 26.2 API changes
+
+- Screen transitions now use `Minecraft.gui.setScreen`.
+- The main render camera is accessed through a small Mixin accessor because the old public getter was removed.
+- Particle queues are accessed through a small Mixin accessor because `ParticleGroup.getAll()` was removed.
+- Particle-limit text is parsed and validated on save because `EditBox.setFilter` was removed.
 
 ## Build
 

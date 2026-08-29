@@ -13,22 +13,29 @@ All notable source, build, compatibility, and performance changes are recorded h
 - Added a GitHub Actions matrix build for both Minecraft 26.2 loader targets.
 - Added `docs/minecraft-26.2-port.md` with the compatibility matrix, technical notes, risk assessment, manual test plan, and publication checklist.
 - Added explicit configuration bounds and recovery from malformed JSON files.
+- Added Mixin accessors for the Minecraft 26.2 main camera and protected `ParticleGroup` queue.
 
 #### Changed
 
 - Targeted Minecraft Java Edition 26.2 and Java 25.
-- Updated Fabric to Fabric Loader 0.19.3, Fabric Loom 1.17-SNAPSHOT, and optional Mod Menu 20.0.1 integration.
+- Updated Fabric to Fabric Loader 0.19.3, Fabric Loom 1.17-SNAPSHOT, Fabric API 0.158.0+26.2 on the development classpath, and optional Mod Menu 20.0.1 integration.
 - Updated NeoForge to NeoForge 26.2.0.67 and ModDevGradle 2.0.144.
 - Replaced the Fabric Cloth Config screen with a small native Minecraft screen.
-- Removed Fabric API and Cloth Config as Smart Particles runtime requirements in the 26.2 Fabric project.
+- Removed Fabric API and Cloth Config as hard Smart Particles runtime requirements in the 26.2 Fabric metadata.
 - Marked the NeoForge entrypoint as client-only.
 - Removed the unused NeoForge particle-renderer accessor from the 26.2 project.
 - Removed machine-specific Java paths from the new Gradle projects.
 - Updated the validation workflow to `actions/checkout@v7`, `actions/setup-java@v6`, and `actions/upload-artifact@v7`.
+- Updated screen transitions for Minecraft 26.2's `Minecraft.gui.setScreen` API.
+- Moved particle-limit text validation to save time after Minecraft removed `EditBox.setFilter`.
 
 #### Fixed during clean-build validation
 
 - Replaced Fabric Loom's removed `modImplementation` configuration with the current `implementation` configuration for optional Mod Menu development integration.
+- Added Fabric API to the Fabric development classpath because Mod Menu 20.0.1 injects Fabric API interfaces into Minecraft classes during compilation.
+- Replaced the removed `GameRenderer.getMainCamera()` call with a zero-reflection Mixin accessor.
+- Replaced the removed `ParticleGroup.getAll()` calls with a zero-reflection Mixin accessor to the protected queue.
+- Corrected the Minecraft 26.2 `Util` package import.
 
 #### Performance
 
@@ -38,7 +45,7 @@ All notable source, build, compatibility, and performance changes are recorded h
 - Read particle coordinates once per scoring pass.
 - Skipped empty particle groups before iterator creation.
 - Cleared temporary heap and identity-set references after selection so discarded particles can be reclaimed sooner.
-- Released unusually large temporary buffers after the configured cap is reduced.
+- Released unusually large temporary buffers after the configured cap is reduced, including frames with no active particles.
 - Limited the configurable particle cap to 1,000,000 to prevent accidental oversized allocations.
 
 #### Preserved
@@ -48,9 +55,10 @@ All notable source, build, compatibility, and performance changes are recorded h
 - Kept the default 5,000-particle limit and smart camera culling enabled.
 - Did not add automatic Modrinth or CurseForge publication.
 
-#### Validation
+#### Validation history
 
-- Source review: complete.
-- Initial Fabric clean build: failed because Loom 1.17 removed `modImplementation`; source corrected and rerun pending.
-- Automated NeoForge build: pending completion.
-- In-game validation: required before publication.
+- Initial Fabric clean build failed because Loom 1.17 removed `modImplementation`; corrected in commit `2d57fcf`.
+- Second Fabric clean build reached Java compilation and exposed Minecraft 26.2 API changes plus Mod Menu's Fabric API compile requirement.
+- Initial and second NeoForge clean builds reached Java compilation and exposed the same Minecraft 26.2 API changes.
+- Third clean-build matrix is pending after the accessor and GUI API corrections.
+- In-game validation remains required before publication.

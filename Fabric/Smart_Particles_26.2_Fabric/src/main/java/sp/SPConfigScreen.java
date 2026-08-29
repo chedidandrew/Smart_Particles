@@ -1,6 +1,5 @@
 package sp;
 
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -8,6 +7,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
 import java.net.URI;
 
@@ -40,7 +40,6 @@ public final class SPConfigScreen extends Screen {
                 Component.literal("Particle Limit"));
         this.limitField.setValue(Integer.toString(SPConfig.get().particleLimit));
         this.limitField.setMaxLength(7);
-        this.limitField.setFilter(value -> value.isEmpty() || value.chars().allMatch(Character::isDigit));
         this.addRenderableWidget(this.limitField);
 
         this.addRenderableWidget(Button.builder(Component.literal("Reset Defaults"), button -> {
@@ -51,7 +50,7 @@ public final class SPConfigScreen extends Screen {
 
         this.addRenderableWidget(Button.builder(Component.literal("Save & Close"), button -> {
             saveSettings();
-            this.minecraft.setScreen(this.parent);
+            this.minecraft.gui.setScreen(this.parent);
         }).bounds(x, y + 90, CONTROL_WIDTH, CONTROL_HEIGHT).build());
 
         int linkWidth = 68;
@@ -81,7 +80,7 @@ public final class SPConfigScreen extends Screen {
                 parsed = Integer.parseInt(this.limitField.getValue());
             }
         } catch (NumberFormatException ignored) {
-            // Keep the default value when the field is outside integer range.
+            // Keep the default value when the field is not a valid integer.
         }
 
         config.particleLimit = SPConfig.clampParticleLimit(parsed);
@@ -89,17 +88,17 @@ public final class SPConfigScreen extends Screen {
     }
 
     private void openLink(String url) {
-        this.minecraft.setScreen(new ConfirmLinkScreen(confirmed -> {
+        this.minecraft.gui.setScreen(new ConfirmLinkScreen(confirmed -> {
             if (confirmed) {
                 Util.getPlatform().openUri(URI.create(url));
             }
-            this.minecraft.setScreen(this);
+            this.minecraft.gui.setScreen(this);
         }, url, true));
     }
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     @Override
