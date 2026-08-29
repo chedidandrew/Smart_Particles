@@ -1,0 +1,73 @@
+name: Build Minecraft 26.2 test JARs
+
+on:
+  push:
+    branches:
+      - update/minecraft-26.2-test
+    paths:
+      - 'Fabric/Smart_Particles_26.2_Fabric/**'
+      - 'NeoForge/Smart_Particles_26.2_NeoForge/**'
+      - '.github/workflows/build-26.2-test.yml'
+  pull_request:
+    paths:
+      - 'Fabric/Smart_Particles_26.2_Fabric/**'
+      - 'NeoForge/Smart_Particles_26.2_NeoForge/**'
+      - '.github/workflows/build-26.2-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.loader }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - loader: Fabric
+            project_dir: Fabric/Smart_Particles_26.2_Fabric
+            artifact_name: smart-particles-fabric-26.2
+          - loader: NeoForge
+            project_dir: NeoForge/Smart_Particles_26.2_NeoForge
+            artifact_name: smart-particles-neoforge-26.2
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+          cache-dependency-path: '${{ matrix.project_dir }}/**/*.gradle*'
+
+      - name: Build
+        working-directory: ${{ matrix.project_dir }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon clean build --stacktrace
+
+      - name: Verify playable JAR
+        working-directory: ${{ matrix.project_dir }}
+        run: |
+          test -n "$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' -print -quit)"
+
+      - name: Generate SHA-256 checksum
+        working-directory: ${{ matrix.project_dir }}
+        run: |
+          find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' -print0 | sort -z | xargs -0 sha256sum > build/libs/SHA256SUMS.txt
+
+      - name: Upload test JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            ${{ matrix.project_dir }}/build/libs/*.jar
+            !${{ matrix.project_dir }}/build/libs/*-sources.jar
+            ${{ matrix.project_dir }}/build/libs/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

@@ -2,58 +2,94 @@
 
 This repository contains the source code for **Smart Particles**, a lightweight client-side optimization mod for Minecraft.
 
-**Mod Summary:** A performance mod that caps the total particle count to maintain stable FPS. Instead of blocking new particles randomly, it intelligently removes the particles farthest from the player to ensure the most important visual effects remain visible.
+**Mod Summary:** Smart Particles caps the total particle count to maintain stable FPS. Instead of blocking new particles randomly, it intelligently removes particles that are less important to the player, prioritizing nearby and visible effects.
+
+## Current Development
+
+- Latest published line: Minecraft 26.1.x
+- Current test target: Minecraft 26.2
+- Test branch: `update/minecraft-26.2-test`
+- Fabric test version: `1.15.0`
+- NeoForge test version: `26.2.11`
+- Automated test builds: `.github/workflows/build-26.2-test.yml`
+
+The Minecraft 26.2 work is intentionally isolated from the published 26.1.x projects. Nothing in this branch publishes to Modrinth or CurseForge automatically.
+
+See [`docs/minecraft-26.2-port.md`](./docs/minecraft-26.2-port.md) for the compatibility matrix, implementation notes, performance changes, and gameplay test checklist.
 
 ---
 
 ## Repository Structure
 
-The codebase is organized by Mod Loader and then by Minecraft Version. Each sub-folder is a standalone Gradle project.
+The codebase is organized by mod loader and Minecraft version. Each version folder is a standalone Gradle project.
 
 ### 📂 [Fabric](./Fabric)
 
 Contains source code for the **Fabric** mod loader.
 
-* **Supported Versions:** 1.16.5 through 1.21.x, plus 26.1 / 26.1.1 / 26.1.2 calendar-version builds.
-* **Key Dependencies:** Fabric API, Cloth Config, and Mod Menu for config integration.
-* **Java:** Requirements vary by Minecraft version; 26.x Fabric builds require JDK 25.
+- **Supported Versions:** 1.16.5 through 1.21.x, plus Minecraft 26.1.x and the 26.2 test port.
+- **Minecraft 26.2 Dependencies:** Fabric Loader, with Mod Menu optional for the configuration button.
+- **Minecraft 26.2 Java:** JDK 25.
+- **26.2 Project:** [`Fabric/Smart_Particles_26.2_Fabric`](./Fabric/Smart_Particles_26.2_Fabric)
+
+The 26.2 Fabric port no longer requires Fabric API or Cloth Config for Smart Particles itself. Its configuration screen uses Minecraft's native GUI classes.
 
 ### 📂 [Forge](./Forge)
 
 Contains source code for the **Minecraft Forge** mod loader.
 
-* **Supported Versions:** 1.7.10, 1.12.2, up to 1.21.x (Discontinued in favor of NeoForge for newer versions).
+- **Supported Versions:** 1.7.10, 1.12.2, and releases through 1.21.x.
+- Forge support is discontinued for newer Minecraft releases in favor of NeoForge.
 
 ### 📂 [NeoForge](./NeoForge)
 
 Contains source code for the **NeoForge** mod loader.
 
-* **Supported Versions:** 1.20.4+, including shared 26.1 / 26.1.1 / 26.1.2 calendar-version builds.
-* **Dependencies:** NeoForge only; no Cloth Config dependency.
-* **Java:** Requirements vary by Minecraft version; 26.x NeoForge builds require JDK 25.
-* **Features:** Native GUI integration via the NeoForge mod list.
+- **Supported Versions:** 1.20.4 and newer, including Minecraft 26.1.x and the 26.2 test port.
+- **Dependencies:** NeoForge only.
+- **Minecraft 26.2 Java:** JDK 25.
+- **26.2 Project:** [`NeoForge/Smart_Particles_26.2_NeoForge`](./NeoForge/Smart_Particles_26.2_NeoForge)
+- **Configuration:** Native integration with the NeoForge Mods screen.
 
 ### 📂 [WIP / Experimental](./Smart_Particles_WIP)
 
-Contains experimental branches or work-in-progress ports that are not yet release-ready.
+Contains experimental projects that are not release-ready.
 
 ---
 
 ## How to Build
 
-Since each version is an isolated project, you must build them individually.
+Each version is an isolated project and must be built from its own folder.
 
-1. **Navigate** to the specific version folder you want to build.
-   * *Example:* `cd Fabric/Smart_Particles_1.21.1_Fabric`
+1. Navigate to the desired project folder.
 
-2. **Run the build command**:
-   * **Windows:** `.\gradlew.bat clean build`
-   * **Linux/macOS:** `./gradlew clean build`
+   ```text
+   cd Fabric/Smart_Particles_26.2_Fabric
+   ```
 
-3. **Locate the Output:**
-   * The compiled `.jar` file will be found in the `build/libs/` directory inside that specific project folder.
+2. Run the build.
 
-Each version folder controls its own Minecraft target, dependency versions, Java level, and output jar name through its local Gradle files.
+   Windows:
+
+   ```text
+   .\gradlew.bat clean build
+   ```
+
+   Linux or macOS:
+
+   ```text
+   ./gradlew clean build
+   ```
+
+3. Find the playable JAR in that project's `build/libs/` folder.
+
+Do not install a file whose name ends in `-sources.jar`.
+
+---
+
+## Validation Policy
+
+A successful Gradle build verifies that the source compiles against the selected loader and Minecraft APIs. It does not replace gameplay testing. New ports should remain on a test branch until the checks in [`docs/minecraft-26.2-port.md`](./docs/minecraft-26.2-port.md) are completed.
 
 ---
 
@@ -63,6 +99,6 @@ Each version folder controls its own Minecraft target, dependency versions, Java
 
 You are free to:
 
-* Use this mod in any modpack.
-* View, fork, and modify the source code.
-* Distribute built versions (keeping the license intact).
+- Use this mod in any modpack.
+- View, fork, and modify the source code.
+- Distribute built versions while keeping the license intact.

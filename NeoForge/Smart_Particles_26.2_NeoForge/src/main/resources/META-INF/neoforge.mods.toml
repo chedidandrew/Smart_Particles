@@ -1,0 +1,35 @@
+license = "${mod_license}"
+issueTrackerURL = "https://github.com/chedidandrew/Smart_Particles/issues"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+displayURL = "https://modrinth.com/mod/smart-particles"
+logoFile = "assets/icon.png"
+authors = "${mod_authors}"
+description = '''${mod_description}
+
+Sources: https://github.com/chedidandrew/Smart_Particles
+Issues: https://github.com/chedidandrew/Smart_Particles/issues
+Donate: https://ko-fi.com/andrewchedid'''
+
+[[mixins]]
+config = "sp.mixins.json"
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neo_version_range}"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "CLIENT"
+
+[features.${mod_id}]
+javaVersion = "[25,)"
