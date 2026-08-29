@@ -24,6 +24,11 @@ All notable source, build, compatibility, and performance changes are recorded h
 - Marked the NeoForge entrypoint as client-only.
 - Removed the unused NeoForge particle-renderer accessor from the 26.2 project.
 - Removed machine-specific Java paths from the new Gradle projects.
+- Updated the validation workflow to `actions/checkout@v7`, `actions/setup-java@v6`, and `actions/upload-artifact@v7`.
+
+#### Fixed during clean-build validation
+
+- Replaced Fabric Loom's removed `modImplementation` configuration with the current `implementation` configuration for optional Mod Menu development integration.
 
 #### Performance
 
@@ -46,6 +51,6 @@ All notable source, build, compatibility, and performance changes are recorded h
 #### Validation
 
 - Source review: complete.
-- Automated Fabric build: pending first branch workflow run.
-- Automated NeoForge build: pending first branch workflow run.
+- Initial Fabric clean build: failed because Loom 1.17 removed `modImplementation`; source corrected and rerun pending.
+- Automated NeoForge build: pending completion.
 - In-game validation: required before publication.
