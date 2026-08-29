@@ -1,6 +1,6 @@
 # Smart Particles for NeoForge 26.2
 
-This is the Minecraft 26.2 NeoForge test port of Smart Particles.
+This is the Minecraft 26.2 NeoForge implementation of Smart Particles.
 
 ## Requirements
 
@@ -48,6 +48,17 @@ Defaults:
 - Particle limit: 5000
 - Smart Camera Culling: enabled
 
-## Test status
+## Validation Status
 
-This branch is intended for local validation before publishing. The Gradle build confirms compile-time compatibility, but gameplay tests should still cover explosions, fireworks, rain, portals, modded particle spam, a zero-particle limit, and toggling camera culling.
+The Minecraft 26.2 NeoForge JAR passed clean CI compilation, packaging, checksum verification, metadata inspection, class-content inspection, and reproducibility checks.
+
+Validated JAR:
+
+```text
+smart_particles-26.2.11.jar
+SHA-256: 457725fca4bf98953f8f62a1afe8120a0fc09f881ae566f15b408e5117aaaf62
+```
+
+A dedicated NeoForge in-game smoke test has not yet been recorded. Run the gameplay checklist in `docs/minecraft-26.2-port.md` before uploading this file to Modrinth or CurseForge.
+
+No percentage performance claim is made until repeatable profiling is completed on controlled hardware and workloads.

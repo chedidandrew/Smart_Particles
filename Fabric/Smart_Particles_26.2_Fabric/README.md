@@ -1,6 +1,6 @@
 # Smart Particles for Fabric 26.2
 
-This is the Minecraft 26.2 Fabric test port of Smart Particles.
+This is the Minecraft 26.2 Fabric implementation of Smart Particles.
 
 ## Requirements
 
@@ -11,7 +11,7 @@ This is the Minecraft 26.2 Fabric test port of Smart Particles.
 
 Fabric API 0.158.0+26.2 is present on the development and CI classpath because Mod Menu's 26.2 artifact uses Fabric API interface injection. Smart Particles core does not call Fabric API and `fabric.mod.json` does not declare it as a hard dependency. Cloth Config is not used.
 
-For the first gameplay test, install Fabric API and Mod Menu together. Also test the Smart Particles JAR without either optional mod to confirm standalone startup.
+Smart Particles can run without Mod Menu. Install Mod Menu when an in-game configuration button is desired.
 
 ## Performance changes in 1.15.0
 
@@ -52,6 +52,17 @@ Defaults:
 - Particle limit: 5000
 - Smart Camera Culling: enabled
 
-## Test status
+## Validation Status
 
-This branch is intended for local validation before publishing. The Gradle build confirms compile-time compatibility, but gameplay tests should still cover explosions, fireworks, rain, portals, modded particle spam, a zero-particle limit, and toggling camera culling.
+The Minecraft 26.2 Fabric JAR passed clean CI compilation, packaging, checksum verification, metadata inspection, and reproducibility checks.
+
+Validated JAR:
+
+```text
+smart_particles+mc26.2-1.15.0.jar
+SHA-256: 58a22aeba0ccc6d3c19edc4849163507ccc6081f3ebbb0c8424e3b8e9a6ce7f4
+```
+
+On August 29, 2026, the maintainer confirmed that this build works in Minecraft 26.2. The recorded smoke test includes configuration persistence, zero and low particle limits, explosions, fireworks, portals, rain, thunderstorms, block breaking, renderer compatibility, and review of `latest.log`.
+
+No percentage performance claim is made until repeatable profiling is completed on controlled hardware and workloads.

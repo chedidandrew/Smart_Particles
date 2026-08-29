@@ -1,14 +1,14 @@
 # Minecraft 26.2 Port Record
 
-## Purpose
+## Purpose and Integration Status
 
-This document preserves the full context for the Smart Particles Minecraft 26.2 update. It is intended to make the port reproducible and understandable months or years later.
+This document preserves the full context for the Smart Particles Minecraft 26.2 update so the work remains reproducible and understandable months or years later.
 
-The work is isolated on `update/minecraft-26.2-test`. Previously published source folders remain unchanged, and no storefront publication is automated.
+The port was developed on `update/minecraft-26.2-test` and integrated through pull request `#8`. Previously published source folders were left unchanged. No repository workflow publishes automatically to Modrinth or CurseForge.
 
 ## Target Matrix
 
-| Target | Minecraft | Loader or toolchain | Java | Test mod version |
+| Target | Minecraft | Loader or toolchain | Java | Mod version |
 | --- | --- | --- | --- | --- |
 | Fabric | 26.2 | Fabric Loader 0.19.3, Fabric Loom 1.17-SNAPSHOT | 25 | 1.15.0 |
 | NeoForge | 26.2 | NeoForge 26.2.0.67, ModDevGradle 2.0.144 | 25 | 26.2.11 |
@@ -16,11 +16,11 @@ The work is isolated on `update/minecraft-26.2-test`. Previously published sourc
 Fabric development integration:
 
 - Fabric API 0.158.0+26.2 is on the build and CI classpath because Mod Menu 20.0.1 injects Fabric API interfaces into Minecraft classes.
-- Mod Menu 20.0.1 provides the Mods screen configuration button.
+- Mod Menu 20.0.1 provides the optional Mods screen configuration button.
 - Smart Particles does not call Fabric API and does not declare it as a hard dependency in `fabric.mod.json`.
 - Cloth Config is not used by Smart Particles 1.15.0.
 
-## New Project Locations
+## Project Locations
 
 ```text
 Fabric/Smart_Particles_26.2_Fabric
@@ -83,7 +83,7 @@ The prior implementation could perform the full bounded nearest-particle selecti
 
 4. **Cleaner traversal**
 
-   Empty particle groups are skipped before creating iterators. Player and camera coordinates are copied to local primitives before the loops.
+   Empty particle groups are skipped before creating iterators. Player and camera coordinates are copied to local primitive values before the loops.
 
 5. **Reduced object retention**
 
@@ -106,7 +106,7 @@ The prior implementation could perform the full bounded nearest-particle selecti
 - No fixed multi-tick delay was added to enforcement. A delay could reduce CPU use, but it would also allow larger transient particle spikes and should be evaluated with profiling data first.
 - No spatial partitioning cache was added. Maintaining such a cache may cost more than it saves for normal particle counts and would increase mixin complexity.
 
-## Clean-Build History
+## Build and Validation History
 
 1. The first Fabric build failed during Gradle configuration because Loom 1.17 removed `modImplementation`.
 2. Commit `2d57fcf` changed the optional Mod Menu dependency to the current `implementation` configuration and updated the GitHub Actions majors.
@@ -116,10 +116,15 @@ The prior implementation could perform the full bounded nearest-particle selecti
 6. GitHub Actions push run `33235002059` passed both loader jobs from a clean checkout on Java 25.
 7. Fabric reported `BUILD SUCCESSFUL` after compile, resource processing, JAR generation, and checks.
 8. NeoForge reported `BUILD SUCCESSFUL` after Minecraft artifact creation, compile, resource processing, JAR generation, and checks.
-9. Both jobs found a playable JAR, generated a SHA-256 file, and uploaded the test artifact.
-10. Downloaded artifacts were independently inspected. Their JAR hashes matched the workflow checksum files, required metadata was present, and the expected Smart Particles classes and mixins were included.
+9. Both jobs found a playable JAR, generated a SHA-256 file, and uploaded the artifact.
+10. Downloaded artifacts were independently inspected. Their JAR hashes matched the workflow checksum files, required metadata was present, and expected Smart Particles classes and mixins were included.
+11. Documentation commit `47d4505d62635277b0bef0af3efc55349c55f00a` passed both loader jobs in GitHub Actions run `33235166995`.
+12. The runtime JARs rebuilt from that documentation commit were byte-for-byte identical to the first successful artifacts.
+13. On August 29, 2026, the maintainer confirmed the Fabric JAR works in Minecraft 26.2.
+14. Pull request `#8` records successful Fabric checks for configuration persistence, zero and low particle limits, explosions, fireworks, portals, rain, thunderstorms, block breaking, renderer compatibility smoke testing, and `latest.log` review.
+15. A dedicated NeoForge gameplay result has not been recorded. NeoForge clean compilation and binary validation remain successful.
 
-## Validated Test Artifacts
+## Validated Artifacts
 
 These binaries were generated from code commit `e325640a606ebbbe848ea933983f3fbccfad3e7e` in GitHub Actions push run `33235002059`.
 
@@ -133,15 +138,28 @@ Workflow archive digests:
 - Fabric ZIP artifact: `sha256:1263edc0582682f6869df4495bac7ee7cc5616e519fceda8ccb4e37873c17596`.
 - NeoForge ZIP artifact: `sha256:095b6e31a71f50211721d51788f60a3e4983ea09c36fbc89b263b09cd0b81bbb`.
 
-Validation completed so far:
+Validation completed for both artifacts:
 
-- Clean compilation passed for Fabric and NeoForge.
-- Playable JAR discovery passed for Fabric and NeoForge.
-- Workflow and independently recalculated JAR checksums matched.
-- Fabric metadata targets Minecraft 26.2, Fabric Loader 0.19.3 or newer, and Java 25 or newer.
-- NeoForge metadata targets Minecraft 26.2, NeoForge 26.2.0.67 through the 26.2 line, and Java 25 or newer.
-- Expected configuration, entrypoint, accessor, and particle mixin classes are present.
-- No gameplay claim has been made. In-game testing is still required.
+- Clean compilation.
+- Playable-JAR discovery.
+- Workflow and independently recalculated SHA-256 agreement.
+- Metadata inspection.
+- Expected entrypoint, configuration, accessor, and particle mixin class inspection.
+- Reproducible runtime JAR output across two successful CI runs.
+
+Additional Fabric validation:
+
+- In-game launch and gameplay operation confirmed by the maintainer.
+- Configuration persistence confirmed.
+- Zero and low particle limits confirmed.
+- Major vanilla particle scenarios confirmed.
+- Renderer compatibility smoke test confirmed.
+- `latest.log` review confirmed.
+
+NeoForge status:
+
+- Build and package validation passed.
+- A dedicated in-game smoke test is still recommended before uploading the NeoForge JAR to Modrinth or CurseForge.
 
 ## Automated Build
 
@@ -151,14 +169,18 @@ Workflow:
 .github/workflows/build-26.2-test.yml
 ```
 
-The workflow builds Fabric and NeoForge independently on Java 25 and uploads only playable JARs, excluding source JARs. Artifacts are retained for 14 days.
+The workflow builds Fabric and NeoForge independently on Java 25 and uploads only playable JARs, excluding source JARs. It runs for relevant changes on `main`, the original port branch, pull requests, and manual dispatches.
 
-Validated run:
+Validated runs:
 
 ```text
 GitHub Actions run: 33235002059
 Code commit: e325640a606ebbbe848ea933983f3fbccfad3e7e
 Result: Fabric success, NeoForge success
+
+GitHub Actions run: 33235166995
+Documentation commit: 47d4505d62635277b0bef0af3efc55349c55f00a
+Result: Fabric success, NeoForge success, byte-for-byte identical runtime JARs
 ```
 
 Local commands:
@@ -171,27 +193,25 @@ cd ../../NeoForge/Smart_Particles_26.2_NeoForge
 ./gradlew clean build
 ```
 
-## Required Gameplay Tests
+## Remaining Gameplay and Regression Tests
 
-Run these checks separately with the Fabric and NeoForge JARs:
+The Fabric smoke test is complete. These checks should still be repeated after future particle-engine or Minecraft mapping changes:
 
-- Start Minecraft 26.2 and reach the title screen without mixin or metadata errors.
-- Open the Mods screen and confirm Smart Particles metadata and icon are present.
+- Start Minecraft and reach the title screen without mixin or metadata errors.
+- Open the Mods screen and confirm Smart Particles metadata and icon.
 - Open the configuration screen, save both settings, restart, and confirm persistence.
-- On Fabric, test with Fabric API and Mod Menu installed.
-- On Fabric, test Smart Particles without Fabric API and Mod Menu to verify standalone startup.
 - Test the default 5,000-particle cap.
 - Test a small cap such as 100.
 - Test a zero cap.
-- Disable smart camera culling and verify particles remain until the global cap is exceeded.
-- Re-enable smart camera culling and rotate the camera around active particle effects.
+- Test smart camera culling both enabled and disabled.
 - Test explosions, fireworks, campfire smoke, portals, rain, thunderstorms, underwater particles, and block breaking.
-- Test a heavy particle source or a particle-spam command from another test mod.
+- Test a heavy particle source or particle-spam test mod.
 - Confirm nearby rain and weather effects are not removed too aggressively.
-- Change the cap from a very high value to a low value and watch memory behavior.
+- Change the cap from a very high value to a low value and observe memory behavior.
 - Leave a world, join another world, and verify no stale particle state or crash.
-- Test with Sodium or another common renderer on Fabric.
-- Test with Embeddium or another common renderer on NeoForge when a 26.2-compatible release is available.
+- Review `latest.log`.
+
+Before publishing the NeoForge file, run the same list with NeoForge 26.2 and include a common 26.2-compatible renderer when one is available.
 
 ## Profiling Plan
 
@@ -206,16 +226,18 @@ For measurable performance claims, compare the previous and 26.2 builds under th
 
 Do not publish a percentage improvement without repeatable measurements from the same hardware, world, camera path, mod list, and particle workload.
 
-## Publication Checklist
+## Integration and Publication Checklist
 
 - [x] Both GitHub Actions jobs pass from a clean checkout.
-- [x] Exact test JAR checksums are recorded.
+- [x] Exact JAR checksums are recorded.
 - [x] Downloaded JAR metadata and class contents are inspected.
-- [ ] Both downloaded JARs pass the gameplay checklist.
-- [ ] No critical errors appear in `latest.log`.
-- [ ] Confirm the final publication version numbers and filenames.
-- [ ] Update this document and `CHANGELOG.md` with the gameplay results.
-- [ ] Merge the test pull request only after validation.
-- [ ] Upload the exact tested JARs to Modrinth and CurseForge.
-- [ ] Mark the release as Minecraft 26.2 and select the correct loader for each file.
-- [ ] Preserve the SHA-256 checksums of the published files.
+- [x] Runtime JAR reproducibility is verified.
+- [x] Fabric gameplay validation is recorded.
+- [x] Fabric configuration persistence, limit behavior, particle effects, renderer smoke test, and `latest.log` review are recorded.
+- [x] Version numbers and filenames are recorded.
+- [x] Repository README, loader READMEs, changelog, workflow, and this technical record are updated.
+- [x] Source integration is approved through pull request `#8`.
+- [ ] NeoForge gameplay validation is recorded.
+- [ ] Upload the exact tested files to Modrinth and CurseForge when storefront publication is intended.
+- [ ] Select Minecraft 26.2 and the correct loader for each storefront file.
+- [ ] Preserve the published file SHA-256 checksums.

@@ -1,8 +1,9 @@
-name: Build Minecraft 26.2 test JARs
+name: Build Minecraft 26.2 JARs
 
 on:
   push:
     branches:
+      - main
       - update/minecraft-26.2-test
     paths:
       - 'Fabric/Smart_Particles_26.2_Fabric/**'
@@ -61,7 +62,7 @@ jobs:
         run: |
           find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' -print0 | sort -z | xargs -0 sha256sum > build/libs/SHA256SUMS.txt
 
-      - name: Upload test JAR
+      - name: Upload playable JAR
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
