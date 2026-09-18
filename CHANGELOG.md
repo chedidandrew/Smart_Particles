@@ -7,7 +7,7 @@ All notable source, build, compatibility, validation, and performance changes ar
 - Added standalone Minecraft 26.3 Fabric (1.16.0) and NeoForge (26.3.0) projects and a matching CI build matrix.
 - Preserved the 26.2 particle algorithm, configuration, and defaults byte-for-byte.
 - Adapted configuration links to the 26.3 URI APIs and updated NeoForge icon metadata.
-- Verified local builds, JAR contents, and client startup. Interactive gameplay parity remains pending; see docs/minecraft-26.3-port.md.
+- Verified local builds, JAR contents, and client startup. On September 18, 2026, the maintainer confirmed that both Fabric and NeoForge passed in-game testing; see docs/minecraft-26.3-port.md.
 
 ## Minecraft 26.2 GitHub source update, 2026-08-29
 

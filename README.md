@@ -6,7 +6,7 @@ This repository contains the source code for **Smart Particles**, a lightweight 
 
 ## Minecraft 26.3 port
 
-New standalone projects are available for [Fabric](./Fabric/Smart_Particles_26.3_Fabric) and [NeoForge](./NeoForge/Smart_Particles_26.3_NeoForge). Both passed local builds and development-client startup with the 26.2 particle/configuration logic unchanged. Interactive gameplay parity is still pending. See the [26.3 validation record](./docs/minecraft-26.3-port.md).
+New standalone projects are available for [Fabric](./Fabric/Smart_Particles_26.3_Fabric) and [NeoForge](./NeoForge/Smart_Particles_26.3_NeoForge). Both passed local builds and development-client startup with the 26.2 particle/configuration logic unchanged. On September 18, 2026, the maintainer tested Fabric and NeoForge in game and confirmed that both passed. See the [26.3 validation record](./docs/minecraft-26.3-port.md).
 
 ## Minecraft 26.2 baseline status
 

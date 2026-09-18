@@ -26,19 +26,32 @@ The only gameplay-source adaptations are in SPConfigScreen: Minecraft 26.3 takes
 
 ModDevGradle 2.0.144 failed while recompiling Minecraft's HolderSet anonymous subclass, before compiling this mod. Version 2.0.147 resolves that dependency compilation failure without patches to Minecraft or the particle algorithm.
 
-## Validation performed locally
+## Initial automated and startup validation
 
 - Both standalone projects passed clean compilation and packaging using Java 25. NeoForge was rebuilt after its icon metadata adjustment.
 - Inspected the playable JAR metadata, version constraints, and all four packaged mixin classes. Generated SHA256SUMS.txt beside each playable JAR.
 - Inspected Minecraft 26.3 bytecode: ParticleEngine.tick, particles, trackedParticleCounts, ParticleGroup.particles, and GameRenderer.mainCamera still match the retained mixin targets.
 - Started both isolated Gradle development clients. Logs confirmed Smart Particles initialization for 26.3, graphics/window initialization, resource loading, and particle-atlas creation. Both generated the expected configuration: particleLimit 5000 and smartCameraCulling true. No Smart Particles mixin failure was observed.
 - Development runs reported Windows OSHI performance-counter/system-report warnings; Fabric also reported an offline-development Realms authentication warning. Neither stopped initialization. The NeoForge logoFile deprecation warning was addressed in the final artifact.
-- Only the development clients started for this validation were stopped. They did not open existing user worlds. Their forced shutdown produces a nonzero runClient exit code; it is not a clean-exit gameplay test.
+- Only the development clients started for the initial startup validation were stopped. They did not open existing user worlds. Their forced shutdown produces a nonzero runClient exit code; it is not a clean-exit gameplay test.
 - Logs remain locally under each project's build/ and run/logs/ directories. They are not committed.
 
-Interactive gameplay and the configuration screen could not be exercised: the desktop-control Node helper exited unexpectedly on both attempts. There are no automated gameplay tests in these projects. Source parity and successful startup support compatibility, but do not prove identical visual behavior or frame times across Minecraft releases. Fabric without Mod Menu/API, renderer mods, and the final NeoForge icon presentation still need interactive verification.
+The initial automated session could not exercise gameplay or the configuration screen because the desktop-control helper failed. The maintainer subsequently performed the manual gameplay testing recorded below.
 
-## Remaining gameplay checks (both loaders)
+## Maintainer gameplay validation - September 18, 2026
+
+The maintainer tested Minecraft 26.3 with Smart Particles on Fabric first, then NeoForge, and confirmed that both passed. Gameplay validation is therefore no longer pending for these builds.
+
+| Loader | Smart Particles version | Result |
+| --- | --- | --- |
+| Fabric | 1.16.0 | Passed, maintainer-confirmed |
+| NeoForge | 26.3.0 | Passed, maintainer-confirmed |
+
+This records the maintainer's overall in-game result. Individual checklist outcomes, third-party renderer combinations, and a Fabric installation without Mod Menu/API were not separately reported. There are no automated gameplay tests or measured cross-version FPS comparisons in this project; the confirmation is not a benchmark claim.
+
+## Gameplay regression checklist (both loaders)
+
+The following checklist is retained for future regression testing; it is not a list of individually recorded results from the maintainer session.
 
 1. Start Minecraft 26.3 with the corresponding playable JAR. For Fabric, test with Mod Menu for the configuration button and separately with only Fabric Loader and Smart Particles.
 2. Open the configuration screen. Check save/reopen, reset defaults, Escape without saving, invalid/empty input, and the external-link confirmation's cancel/return behavior.
@@ -54,4 +67,4 @@ Interactive gameplay and the configuration screen could not be exercised: the de
 - NeoForge: `NeoForge/Smart_Particles_26.3_NeoForge/build/libs/smart_particles-26.3.0.jar`
   - SHA-256: `63ef86715e7e25f94c9d43c434f950f2f872dbf7f880a32242e2311169a45424`
 
-Do not install the sources JAR. The new build-26.3-test.yml workflow builds both projects and uploads playable JARs and checksums; it does not publish releases. CI execution and storefront publication have not been performed for this port.
+Do not install the sources JAR. The new build-26.3-test.yml workflow builds both projects and uploads playable JARs and checksums; it does not publish releases. Storefront publication is separate from the build and gameplay validation recorded here.

@@ -10,4 +10,4 @@ Run `.\gradlew.bat clean build` on Windows or `./gradlew clean build` on Linux/m
 
 ## Validation
 
-Compilation, packaging, metadata inspection, source parity, and development-client startup passed locally. Full gameplay and interactive configuration checks remain pending. See [the 26.3 port record](../../docs/minecraft-26.3-port.md) for exact dependencies, API adaptations, checksums, and the remaining gameplay checks.
+Compilation, packaging, metadata inspection, source parity, and development-client startup passed locally. On September 18, 2026, the maintainer tested the NeoForge build in game and confirmed it passed. See [the 26.3 port record](../../docs/minecraft-26.3-port.md) for exact dependencies, API adaptations, checksums, and the maintainer gameplay validation record.
