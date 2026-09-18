@@ -4,9 +4,13 @@ This repository contains the source code for **Smart Particles**, a lightweight 
 
 **Mod Summary:** Smart Particles caps the total particle count to maintain stable FPS. Instead of blocking new particles randomly, it intelligently removes particles that are less important to the player, prioritizing nearby and visible effects.
 
-## Current Status
+## Minecraft 26.3 port
 
-- Current source target: Minecraft 26.2
+New standalone projects are available for [Fabric](./Fabric/Smart_Particles_26.3_Fabric) and [NeoForge](./NeoForge/Smart_Particles_26.3_NeoForge). Both passed local builds and development-client startup with the 26.2 particle/configuration logic unchanged. Interactive gameplay parity is still pending. See the [26.3 validation record](./docs/minecraft-26.3-port.md).
+
+## Minecraft 26.2 baseline status
+
+- Previous source target: Minecraft 26.2
 - Storefront release line at the time of this merge: Minecraft 26.1.x
 - Fabric version: `1.15.0`
 - NeoForge version: `26.2.11`
