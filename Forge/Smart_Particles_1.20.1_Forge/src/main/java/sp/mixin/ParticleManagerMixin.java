@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collections;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,6 +37,16 @@ public abstract class ParticleManagerMixin {
     private Particle[] spHeapParticles;
     private double[] spHeapScores;
     private Set<Particle> spKeep;
+
+    @Inject(method = "setLevel", at = @At("HEAD"))
+    private void smartparticles$clearPreviousLevel(ClientLevel level, CallbackInfo ci) {
+        if (this.spHeapParticles != null) {
+            Arrays.fill(this.spHeapParticles, null);
+        }
+        if (this.spKeep != null) {
+            this.spKeep.clear();
+        }
+    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void smartparticles$enforceParticleLimit(CallbackInfo ci) {
